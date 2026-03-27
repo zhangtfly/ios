@@ -1,0 +1,57 @@
+<resources>
+    <string name="app_name">阳光清言</string>
+    <string name="press_to_talk">按住说话</string>
+    <string name="recording">正在说话...</string>
+    <string name="voice_hint_release">松手转为文字，上滑取消</string>
+    <string name="loading">བསམ་བློ་གཏོང་བཞིན་ཡོད།...</string>
+    <string name="suggestion_card_1_zh">请写一篇"十五五规划"的学习心得。</string>
+    
+    <!-- 登录注册相关 - 藏语 -->
+    <string name="click_to_login">ཐོ་འཇུག་གནོན་རོགས།</string>
+    <string name="login_title">ཐོ་འཇུག</string>
+    <string name="register_title">ཐོ་འགོད།</string>
+    <string name="hint_username">སྤྱོད་མཁན་གྱི་མིང་འཇུག་རོགས།</string>
+    <string name="hint_account">རྩིས་ཁྲ་འཇུག་རོགས།</string>
+    <string name="login_hint">གསང་ཨང་མི་དགོས། རྩིས་ཁྲ་འཇུག་ནས་ཐོ་འཇུག་བྱེད་ཆོག</string>
+    <string name="register_hint">རང་འགུལ་ངང་སྔོན་སྒྲིག་གསང་ཨང་སྒྲིག་འགོད་བྱེད་པ།</string>
+    <string name="login_button">ཐོ་འཇུག</string>
+    <string name="register_button">ཐོ་འགོད།</string>
+    <string name="switch_to_register">རྩིས་ཁྲ་མེད་དམ། ཐོ་འགོད་གནོན་རོགས།</string>
+    <string name="switch_to_login">རྩིས་ཁྲ་ཡོད་དམ། ཐོ་འཇུག་གནོན་རོགས།</string>
+    <string name="logout">ཕྱིར་འབུད་པ།</string>
+    <string name="logging_in">ཐོ་འཇུག་བྱེད་བཞིན་པ...</string>
+    <string name="registering">ཐོ་འགོད་བྱེད་བཞིན་པ...</string>
+    <string name="login_success">ཐོ་འཇུག་ལེགས་གྲུབ།</string>
+    <string name="login_failed">ཐོ་འཇུག་ཕམ་པ།</string>
+    <string name="register_success">ཐོ་འགོད་ལེགས་གྲུབ། ཐོ་འཇུག་གནོན་རོགས།</string>
+    <string name="register_failed">ཐོ་འགོད་ཕམ་པ།</string>
+    <string name="network_error">དྲ་བའི་ནོར་འཁྲུལ།</string>
+
+    <!-- Login page additional strings - Chinese -->
+    <string name="login_title_zh">登录</string>
+    <string name="login_subtitle_zh">藏语大模型</string>
+    <string name="account_login_zh">账号登录</string>
+    <string name="verification_login_zh">验证码登录</string>
+    <string name="username_zh">用户名</string>
+    <string name="password_zh">密码</string>
+    <string name="remember_me_zh">记住我</string>
+    <string name="forgot_password_zh">忘记密码？</string>
+    <string name="visitor_access_zh">游客访问</string>
+    <string name="visitor_hint_zh">游客模式下部分功能可能受限</string>
+    <string name="no_account_zh">还没有账号？</string>
+    <string name="register_now_zh">立即注册</string>
+
+    <!-- Login page additional strings - English -->
+    <string name="login_title_en">Login</string>
+    <string name="login_subtitle_en">Tibetan AI Model</string>
+    <string name="account_login_en">Account</string>
+    <string name="verification_login_en">Verification</string>
+    <string name="username_en">Username</string>
+    <string name="password_en">Password</string>
+    <string name="remember_me_en">Remember me</string>
+    <string name="forgot_password_en">Forgot password?</string>
+    <string name="visitor_access_en">Guest Access</string>
+    <string name="visitor_hint_en">Some features may be limited in guest mode</string>
+    <string name="no_account_en">Don\'t have an account? </string>
+    <string name="register_now_en">Register</string>
+</resources>

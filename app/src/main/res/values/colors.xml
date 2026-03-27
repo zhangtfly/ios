@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    
+    <!-- Dark theme colors -->
+    <color name="dark_background">#FF121212</color>
+    <color name="dark_text_primary">#FFFFFFFF</color>
+    <color name="dark_text_secondary">#FFB3B3B3</color>
+    
+    <!-- Dark mode chat colors -->
+    <color name="dark_answer_background">#FF2A2A2A</color>  <!-- 深灰 -->
+    <color name="dark_thinking_background">#FF1B2B3B</color>  <!-- 暗蓝 -->
+    
+    <!-- Chat page background - light blue for light mode -->
+    <color name="chat_background">#E3F2FD</color>
+
+    <!-- Login page colors from HTML -->
+    <color name="login_background">#F8F5F0</color>
+    <color name="login_card_background">#FFFFFF</color>
+    <color name="login_primary_green">#1F8A4F</color>
+    <color name="login_tab_green">#28A85A</color>
+    <color name="login_orange">#FF9800</color>
+    <color name="login_link_blue">#2D8CF0</color>
+    <color name="login_text_primary">#333333</color>
+    <color name="login_text_secondary">#666666</color>
+    <color name="login_text_hint">#999999</color>
+    <color name="login_border">#E0E0E0</color>
+    <color name="login_visitor_background">#EAEAEA</color>
+</resources>

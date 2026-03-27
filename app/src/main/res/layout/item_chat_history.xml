@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/square_border"
+    android:layout_margin="4dp"
+    android:padding="12dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground">
+
+    <!-- 标题和时间 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/titleTextView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="对话标题"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="?android:attr/textColorPrimary"
+            android:maxLines="1"
+            android:ellipsize="end" />
+
+        <TextView
+            android:id="@+id/timeTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="12-25 14:30"
+            android:textSize="12sp"
+            android:textColor="?android:attr/textColorSecondary"
+            android:layout_marginStart="8dp" />
+
+    </LinearLayout>
+
+    <!-- 问题预览 -->
+    <TextView
+        android:id="@+id/questionTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="用户问题预览..."
+        android:textSize="14sp"
+        android:textColor="?android:attr/textColorPrimary"
+        android:layout_marginTop="4dp"
+        android:maxLines="2"
+        android:ellipsize="end" />
+
+    <!-- 回答预览 -->
+    <TextView
+        android:id="@+id/answerTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="AI回答预览..."
+        android:textSize="13sp"
+        android:textColor="?android:attr/textColorSecondary"
+        android:layout_marginTop="4dp"
+        android:maxLines="2"
+        android:ellipsize="end" />
+
+    <!-- 底部信息 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginTop="8dp">
+
+        <!-- 思考标识 -->
+        <TextView
+            android:id="@+id/thinkingIndicator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="💭 深度思考"
+            android:textSize="11sp"
+            android:textColor="?android:attr/textColorSecondary"
+            android:background="@drawable/input_border"
+            android:paddingStart="6dp"
+            android:paddingEnd="6dp"
+            android:paddingTop="2dp"
+            android:paddingBottom="2dp"
+            android:visibility="gone" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
+
+        <!-- 删除按钮 -->
+        <ImageButton
+            android:id="@+id/deleteButton"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_menu_delete"
+            android:contentDescription="删除"
+            android:scaleType="center"
+            android:alpha="0.6" />
+
+    </LinearLayout>
+
+</LinearLayout>

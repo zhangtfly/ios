@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">阳光清言</string>
+    <string name="press_to_talk">མནན་ནས་གསུང་རོགས།</string>
+    <string name="recording">གསུང་བཞིན་པ...</string>
+    <string name="voice_hint_release">ལྷོད་ནས་ཡི་གེར་བསྒྱུར། ཡར་འགྱེད་ནས་མེད་པར་བཟོ།</string>
+    <string name="loading">སྣོན་འཇུག་བྱེད་བཞིན་པ...</string>
+    <string name="click_to_login">ཐོ་འཇུག</string>
+    <string name="logout">ཕྱིར་འབུད།</string>
+</resources>

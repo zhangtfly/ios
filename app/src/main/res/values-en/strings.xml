@@ -1,0 +1,28 @@
+<resources>
+    <string name="app_name">阳光清言</string>
+    <string name="press_to_talk">Press to speak</string>
+    <string name="recording">Recording...</string>
+    <string name="voice_hint_release">Release to convert, slide up to cancel</string>
+    <string name="loading">Thinking...</string>
+    
+    <!-- Login & Register - English -->
+    <string name="click_to_login">Click to Login</string>
+    <string name="login_title">Login</string>
+    <string name="register_title">Register</string>
+    <string name="hint_username">Enter username</string>
+    <string name="hint_account">Enter account</string>
+    <string name="login_hint">No password required, just enter your account</string>
+    <string name="register_hint">Default password will be set automatically</string>
+    <string name="login_button">Login</string>
+    <string name="register_button">Register</string>
+    <string name="switch_to_register">Don\'t have an account? Register</string>
+    <string name="switch_to_login">Already have an account? Login</string>
+    <string name="logout">Logout</string>
+    <string name="logging_in">Logging in...</string>
+    <string name="registering">Registering...</string>
+    <string name="login_success">Login successful</string>
+    <string name="login_failed">Login failed</string>
+    <string name="register_success">Registration successful, please login</string>
+    <string name="register_failed">Registration failed</string>
+    <string name="network_error">Network error</string>
+</resources>

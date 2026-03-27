@@ -1,0 +1,353 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?android:attr/colorBackground">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- 用户信息区域 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?android:attr/colorBackground"
+            android:orientation="horizontal"
+            android:padding="24dp"
+            android:gravity="center_vertical">
+
+            <!-- 头像 -->
+            <ImageView
+                android:id="@+id/profileAvatar"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:background="@drawable/avatar_background"
+                android:src="@android:drawable/ic_menu_myplaces"
+                android:scaleType="centerInside"
+                android:layout_marginEnd="16dp" />
+
+            <!-- 用户信息 -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/userName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="阳光清言用户"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="?android:attr/textColorPrimary"
+                    android:layout_marginBottom="4dp" />
+
+                <TextView
+                    android:id="@+id/userEmail"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="sunshine@tibetan.ai"
+                    android:textSize="14sp"
+                    android:textColor="?android:attr/textColorSecondary" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- 分割线 -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="8dp"
+            android:background="?android:attr/colorBackground" />
+
+        <!-- 功能选项区域 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?android:attr/colorBackground"
+            android:orientation="vertical">
+
+            <!-- 设置 -->
+            <LinearLayout
+                android:id="@+id/settingsOption"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="24dp"
+                android:paddingEnd="24dp"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@android:drawable/ic_menu_preferences"
+                    android:layout_marginEnd="16dp"
+                    android:tint="?android:attr/textColorSecondary" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="设置"
+                    android:textSize="16sp"
+                    android:textColor="?android:attr/textColorPrimary" />
+
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@android:drawable/ic_menu_more"
+                    android:rotation="270"
+                    android:tint="?android:attr/textColorSecondary" />
+
+            </LinearLayout>
+
+            <!-- 分割线 -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="?android:attr/colorBackground"
+                android:layout_marginStart="64dp" />
+
+            <!-- 语言 -->
+            <LinearLayout
+                android:id="@+id/languageOption"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="24dp"
+                android:paddingEnd="24dp"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@android:drawable/ic_menu_sort_alphabetically"
+                    android:layout_marginEnd="16dp"
+                    android:tint="?android:attr/textColorSecondary" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="语言"
+                    android:textSize="16sp"
+                    android:textColor="?android:attr/textColorPrimary" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="中文"
+                    android:textSize="14sp"
+                    android:textColor="?android:attr/textColorSecondary"
+                    android:layout_marginEnd="8dp" />
+
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@android:drawable/ic_menu_more"
+                    android:rotation="270"
+                    android:tint="?android:attr/textColorSecondary" />
+
+            </LinearLayout>
+
+            <!-- 分割线 -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="?android:attr/colorBackground"
+                android:layout_marginStart="64dp" />
+
+            <!-- 升级计划 -->
+            <LinearLayout
+                android:id="@+id/upgradeOption"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="24dp"
+                android:paddingEnd="24dp"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@android:drawable/ic_menu_upload"
+                    android:layout_marginEnd="16dp"
+                    android:tint="#FF9800" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="升级计划"
+                    android:textSize="16sp"
+                    android:textColor="?android:attr/textColorPrimary" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Pro"
+                    android:textSize="12sp"
+                    android:textColor="@android:color/white"
+                    android:background="#FF9800"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
+                    android:paddingTop="2dp"
+                    android:paddingBottom="2dp"
+                    android:layout_marginEnd="8dp" />
+
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@android:drawable/ic_menu_more"
+                    android:rotation="270"
+                    android:tint="?android:attr/textColorSecondary" />
+
+            </LinearLayout>
+
+            <!-- 分割线 -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="?android:attr/colorBackground"
+                android:layout_marginStart="64dp" />
+
+            <!-- 了解更多 -->
+            <LinearLayout
+                android:id="@+id/learnMoreOption"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="24dp"
+                android:paddingEnd="24dp"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@android:drawable/ic_menu_info_details"
+                    android:layout_marginEnd="16dp"
+                    android:tint="?android:attr/textColorSecondary" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="了解更多"
+                    android:textSize="16sp"
+                    android:textColor="?android:attr/textColorPrimary" />
+
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@android:drawable/ic_menu_more"
+                    android:rotation="270"
+                    android:tint="?android:attr/textColorSecondary" />
+
+            </LinearLayout>
+
+            <!-- 分割线 -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="?android:attr/colorBackground"
+                android:layout_marginStart="64dp" />
+
+            <!-- 获取帮助 -->
+            <LinearLayout
+                android:id="@+id/helpOption"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="24dp"
+                android:paddingEnd="24dp"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@android:drawable/ic_menu_help"
+                    android:layout_marginEnd="16dp"
+                    android:tint="?android:attr/textColorSecondary" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="获取帮助"
+                    android:textSize="16sp"
+                    android:textColor="?android:attr/textColorPrimary" />
+
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@android:drawable/ic_menu_more"
+                    android:rotation="270"
+                    android:tint="?android:attr/textColorSecondary" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- 分割线 -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="8dp"
+            android:background="?android:attr/colorBackground" />
+
+        <!-- 退出登录 -->
+        <LinearLayout
+            android:id="@+id/logoutOption"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
+            android:background="?android:attr/colorBackground"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@android:drawable/ic_menu_revert"
+                android:layout_marginEnd="16dp"
+                android:tint="#F44336" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="退出登录"
+                android:textSize="16sp"
+                android:textColor="#F44336" />
+
+        </LinearLayout>
+
+        <!-- 底部间距 -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="32dp"
+            android:background="?android:attr/colorBackground" />
+
+    </LinearLayout>
+
+</ScrollView>

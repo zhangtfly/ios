@@ -1,0 +1,376 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="@color/login_background">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- སྐད་ཡིག་གདམ་ག་按钮 -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="24dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/btn_lang_tibetan"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="12dp"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp"
+                android:text="བོད་ཡིག"
+                android:textSize="15sp"
+                android:textColor="@color/white"
+                android:background="@drawable/language_button_background_new"
+                android:selected="true"
+                android:clickable="true"
+                android:focusable="true"/>
+
+            <TextView
+                android:id="@+id/btn_lang_chinese"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="12dp"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp"
+                android:text="中文"
+                android:textSize="15sp"
+                android:textColor="@color/login_text_secondary"
+                android:background="@drawable/language_button_background_new"
+                android:clickable="true"
+                android:focusable="true"/>
+
+            <TextView
+                android:id="@+id/btn_lang_english"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="12dp"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp"
+                android:text="English"
+                android:textSize="15sp"
+                android:textColor="@color/login_text_secondary"
+                android:background="@drawable/language_button_background_new"
+                android:clickable="true"
+                android:focusable="true"/>
+        </LinearLayout>
+
+        <!-- ནང་དོན་གཙོ་བོ་区域 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:paddingTop="40dp"
+            android:paddingBottom="40dp">
+
+            <!-- ཐོ་འཇུག་卡片 -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="380dp"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="28dp"
+                app:cardElevation="8dp"
+                app:cardBackgroundColor="@color/white">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="32dp">
+
+                    <!-- Logo区域 -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:text="ཉི་འོད་གསལ་གཏམ"
+                        android:textSize="28sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/login_primary_green"
+                        android:layout_marginBottom="8dp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:text="བོད་ཡིག་རིག་ནུས་དཔེ་དབྱིབས"
+                        android:textSize="16sp"
+                        android:textColor="@color/login_text_hint"
+                        android:layout_marginBottom="24dp"/>
+
+                    <!-- ཐོ་འཇུག་ཐབས་ལམ་切换标签 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="24dp"
+                        android:background="@drawable/login_card_background"
+                        android:elevation="3dp">
+
+                        <TextView
+                            android:id="@+id/tab_account"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:padding="14dp"
+                            android:gravity="center"
+                            android:text="རྩིས་ཁྲ་ཐོ་འཇུག"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/white"
+                            android:background="@drawable/tab_account_background"
+                            android:selected="true"
+                            android:clickable="true"
+                            android:focusable="true"/>
+
+                        <TextView
+                            android:id="@+id/tab_verification"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:padding="14dp"
+                            android:gravity="center"
+                            android:text="བདེན་དཔང་ཨང་ཐོ་འཇུག"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/login_text_secondary"
+                            android:background="@drawable/tab_verification_background"
+                            android:clickable="true"
+                            android:focusable="true"/>
+                    </LinearLayout>
+
+                    <!-- སྤྱོད་མཁན་གྱི་མིང་输入框 -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="སྤྱོད་མཁན་གྱི་མིང"
+                        android:textSize="15sp"
+                        android:textColor="@color/login_text_primary"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="6dp"/>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:background="@drawable/login_input_background"
+                        android:layout_marginBottom="16dp">
+
+                        <ImageView
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:layout_marginStart="16dp"
+                            android:src="@android:drawable/ic_menu_myplaces"
+                            android:tint="@color/login_text_primary"/>
+
+                        <EditText
+                            android:id="@+id/et_account"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:padding="14dp"
+                            android:paddingStart="12dp"
+                            android:hint="སྤྱོད་མཁན་གྱི་མིང་འཇུག་རོགས"
+                            android:textSize="16sp"
+                            android:textColor="@color/login_text_primary"
+                            android:textColorHint="@color/login_text_hint"
+                            android:background="@android:color/transparent"
+                            android:inputType="text"/>
+                    </LinearLayout>
+
+                    <!-- གསང་ཨང་输入框 -->
+                    <TextView
+                        android:id="@+id/label_password"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="གསང་ཨང"
+                        android:textSize="15sp"
+                        android:textColor="@color/login_text_primary"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="6dp"/>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:background="@drawable/login_input_background">
+
+                        <ImageView
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:layout_marginStart="16dp"
+                            android:src="@android:drawable/ic_lock_lock"
+                            android:tint="@color/login_text_primary"/>
+
+                        <EditText
+                            android:id="@+id/et_password"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:padding="14dp"
+                            android:paddingStart="12dp"
+                            android:hint="གསང་ཨང་འཇུག་རོགས"
+                            android:textSize="16sp"
+                            android:textColor="@color/login_text_primary"
+                            android:textColorHint="@color/login_text_hint"
+                            android:background="@android:color/transparent"
+                            android:inputType="textPassword"/>
+
+                        <ImageButton
+                            android:id="@+id/btn_toggle_password"
+                            android:layout_width="44dp"
+                            android:layout_height="44dp"
+                            android:padding="12dp"
+                            android:src="@android:drawable/ic_menu_view"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:tint="@color/login_text_primary"/>
+                    </LinearLayout>
+
+                    <!-- ང་དྲན་པ་ & གསང་ཨང་བརྗེད་སོང་ -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginTop="12dp"
+                        android:layout_marginBottom="20dp">
+
+                        <CheckBox
+                            android:id="@+id/cb_remember"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="ང་དྲན་པ"
+                            android:textSize="14sp"
+                            android:textColor="@color/login_text_hint"
+                            android:buttonTint="@color/login_text_hint"/>
+
+                        <View
+                            android:layout_width="0dp"
+                            android:layout_height="0dp"
+                            android:layout_weight="1"/>
+
+                        <TextView
+                            android:id="@+id/tv_forgot_password"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="གསང་ཨང་བརྗེད་སོང་ངམ།"
+                            android:textSize="12sp"
+                            android:textColor="@color/login_text_hint"
+                            android:clickable="true"
+                            android:focusable="true"/>
+                    </LinearLayout>
+
+                    <!-- ཐོ་འཇུག་按钮 -->
+                    <Button
+                        android:id="@+id/btn_login"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:text="ཐོ་འཇུག"
+                        android:textSize="17sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/white"
+                        android:background="@drawable/login_button_background"
+                        android:layout_marginBottom="20dp"/>
+
+                    <!-- བགོས་བྱེད་线 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center"
+                        android:layout_marginBottom="20dp">
+
+                        <View
+                            android:layout_width="0dp"
+                            android:layout_height="1dp"
+                            android:layout_weight="1"
+                            android:background="@color/login_border"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="ཡང་ན"
+                            android:textSize="14sp"
+                            android:textColor="@color/login_text_hint"
+                            android:paddingStart="16dp"
+                            android:paddingEnd="16dp"/>
+
+                        <View
+                            android:layout_width="0dp"
+                            android:layout_height="1dp"
+                            android:layout_weight="1"
+                            android:background="@color/login_border"/>
+                    </LinearLayout>
+
+                    <!-- མགྲོན་པོ་访问按钮 -->
+                    <Button
+                        android:id="@+id/btn_visitor"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:text="👤  མགྲོན་པོ་ཐོ་འཇུག"
+                        android:textSize="16sp"
+                        android:textColor="@color/login_text_secondary"
+                        android:background="@drawable/visitor_button_background"
+                        android:layout_marginBottom="8dp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:text="མགྲོན་པོ་ཐོ་འཇུག་སྐབས་ནུས་པ་ཁག་གཅིག་ཚོད་འཛིན་ཡོད"
+                        android:textSize="12sp"
+                        android:textColor="@color/login_text_hint"
+                        android:layout_marginBottom="20dp"/>
+
+                    <!-- ཐོ་འགོད་链接 -->
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="24dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="རྩིས་ཁྲ་མེད་དམ། "
+                            android:textSize="15sp"
+                            android:textColor="@color/login_text_primary"/>
+
+                        <TextView
+                            android:id="@+id/tv_go_register"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="ཐོ་འགོད་གནོན་རོགས"
+                            android:textSize="15sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/login_link_blue"
+                            android:clickable="true"
+                            android:focusable="true"/>
+                    </LinearLayout>
+
+                    <!-- བདག་དབང་信息 -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:text="བདག་དབང་© བོད་ལྗོངས་སློབ་གྲྭ་ཆེན་མོ"
+                        android:textSize="14sp"
+                        android:textColor="@color/login_text_hint"
+                        android:gravity="center"/>
+
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

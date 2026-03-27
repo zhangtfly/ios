@@ -1,0 +1,778 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/drawerLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ChatFragment">
+
+<RelativeLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?android:attr/colorBackground">
+
+    <!-- 顶部栏 -->
+    <LinearLayout
+        android:id="@+id/topBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="16dp"
+        android:gravity="center_vertical"
+        android:paddingStart="8dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="2dp">
+
+        <!-- Menu Button -->
+        <ImageButton
+            android:id="@+id/menuButton"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_menu"
+            android:contentDescription="Menu"
+            android:scaleType="center" />
+
+        <!-- Back Button (shown in chat mode) -->
+        <ImageButton
+            android:id="@+id/backButton"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_menu_revert"
+            android:contentDescription="Back"
+            android:visibility="gone"
+            android:scaleType="center" />
+
+        <!-- Model Name -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:gravity="start|center_vertical"
+            android:layout_marginStart="8dp">
+
+            <TextView
+                android:id="@+id/modelSelectorText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="SunshineGLM"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="?android:attr/textColorPrimary"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?android:attr/selectableItemBackground"
+                android:padding="4dp"
+                android:singleLine="true"
+                android:maxLines="1"
+                android:ellipsize="end" />
+
+            <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:src="@drawable/ic_dropdown"
+                android:layout_marginStart="2dp"
+                android:contentDescription="Dropdown" />
+
+        </LinearLayout>
+
+        <!-- Audio Button -->
+        <ImageButton
+            android:id="@+id/audioButton"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="8dp"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_volume"
+            android:contentDescription="Audio"
+            android:scaleType="center" />
+
+        <!-- Chat Icon Button -->
+        <ImageButton
+            android:id="@+id/chatIconButton"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="8dp"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_chat"
+            android:contentDescription="Chat"
+            android:scaleType="center" />
+
+        <!-- 语言切换按钮 -->
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/languageSwitchButton"
+            android:layout_width="40dp"
+            android:layout_height="32dp"
+            android:text="EN"
+            android:textSize="14sp"
+            android:textColor="?android:attr/textColorSecondary"
+            android:background="@drawable/language_button_background"
+            android:backgroundTint="@null"
+            android:stateListAnimator="@null"
+            android:elevation="0dp"
+            android:gravity="center"
+            style="@style/Widget.AppCompat.Button.Borderless" />
+
+    </LinearLayout>
+
+    <!-- Greeting Area -->
+    <TextView
+        android:id="@+id/greetingText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/topBar"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="8dp"
+        android:text="Hi, where to start today?"
+        android:textSize="30sp"
+        android:textStyle="bold"
+        android:textColor="?android:attr/textColorPrimary"
+        android:visibility="visible" />
+
+    <!-- Chat Greeting Area - 英文模式不显示主页 -->
+    <ScrollView
+        android:id="@+id/chatGreetingLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/greetingText"
+        android:layout_above="@id/chatInputContainer"
+        android:layout_marginTop="60dp"
+        android:fillViewport="true"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:paddingStart="32dp"
+            android:paddingEnd="32dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Hello!"
+                android:textSize="34sp"
+                android:textStyle="bold"
+                android:textColor="?android:attr/textColorPrimary"
+                android:layout_marginBottom="16dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="I am SunshineGLM. May I help you with anything?"
+                android:textSize="18sp"
+                android:textColor="?android:attr/textColorSecondary"
+                android:gravity="center"
+                android:lineSpacingExtra="4dp" />
+
+        </LinearLayout>
+
+    </ScrollView>
+
+    <!-- Suggestion Cards Area - 英文模式不显示 -->
+    <ScrollView
+        android:id="@+id/centerLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/greetingText"
+        android:layout_above="@id/chatInputContainer"
+        android:layout_marginTop="24dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="16dp"
+        android:fillViewport="true"
+        android:visibility="gone">
+
+        <GridLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:columnCount="2"
+            android:rowCount="2"
+            android:alignmentMode="alignMargins"
+            android:columnOrderPreserved="false">
+
+            <!-- Suggestion Card 1 -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/smartQAButton"
+                android:layout_width="0dp"
+                android:layout_height="160dp"
+                android:layout_row="0"
+                android:layout_column="0"
+                android:layout_columnWeight="1"
+                android:layout_margin="8dp"
+                android:layout_marginTop="40dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="@android:color/transparent"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?android:attr/selectableItemBackground">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:padding="16dp"
+                    android:gravity="start"
+                    android:background="@drawable/gradient_card_1">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:text="Please write a study reflection on the 15th Five Year Plan."
+                        android:textSize="15sp"
+                        android:textColor="#333333"
+                        android:lineSpacingExtra="2dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🔍 Prompt"
+                        android:textSize="12sp"
+                        android:textColor="#999999" />
+
+                </LinearLayout>
+
+            </androidx.cardview.widget.CardView>
+
+            <!-- Suggestion Card 2 -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/smartTranslateButton"
+                android:layout_width="0dp"
+                android:layout_height="160dp"
+                android:layout_row="0"
+                android:layout_column="1"
+                android:layout_columnWeight="1"
+                android:layout_margin="8dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="@android:color/transparent"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?android:attr/selectableItemBackground">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:padding="16dp"
+                    android:gravity="start"
+                    android:background="@drawable/gradient_card_2">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:text="Write a poem praising the teacher."
+                        android:textSize="15sp"
+                        android:textColor="#333333"
+                        android:lineSpacingExtra="2dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🔍 Prompt"
+                        android:textSize="12sp"
+                        android:textColor="#999999" />
+
+                </LinearLayout>
+
+            </androidx.cardview.widget.CardView>
+
+            <!-- Suggestion Card 3 -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/semanticButton"
+                android:layout_width="0dp"
+                android:layout_height="160dp"
+                android:layout_row="1"
+                android:layout_column="0"
+                android:layout_columnWeight="1"
+                android:layout_margin="8dp"
+                android:layout_marginTop="40dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="@android:color/transparent"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?android:attr/selectableItemBackground">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:padding="16dp"
+                    android:gravity="start"
+                    android:background="@drawable/gradient_card_3">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:text="Please write a graduation ceremony speech for the principal."
+                        android:textSize="15sp"
+                        android:textColor="#333333"
+                        android:lineSpacingExtra="2dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🔍 Prompt"
+                        android:textSize="12sp"
+                        android:textColor="#999999" />
+
+                </LinearLayout>
+
+            </androidx.cardview.widget.CardView>
+
+            <!-- Suggestion Card 4 -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/fourthButton"
+                android:layout_width="0dp"
+                android:layout_height="160dp"
+                android:layout_row="1"
+                android:layout_column="1"
+                android:layout_columnWeight="1"
+                android:layout_margin="8dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="@android:color/transparent"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?android:attr/selectableItemBackground">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:padding="16dp"
+                    android:gravity="start"
+                    android:background="@drawable/gradient_card_4">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:text="What is the necessity of studying medicine?"
+                        android:textSize="15sp"
+                        android:textColor="#333333"
+                        android:lineSpacingExtra="2dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🔍 Prompt"
+                        android:textSize="12sp"
+                        android:textColor="#999999" />
+
+                </LinearLayout>
+
+            </androidx.cardview.widget.CardView>
+
+        </GridLayout>
+
+    </ScrollView>
+
+    <!-- 聊天消息区域（初始隐藏） -->
+    <ScrollView
+        android:id="@+id/chatScrollView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/topBar"
+        android:layout_above="@id/chatInputContainer"
+        android:layout_marginTop="0dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="2dp"
+        android:paddingBottom="16dp"
+        android:fillViewport="true"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:id="@+id/chatMessagesContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+
+    </ScrollView>
+    
+    <!-- Bottom Input Area -->
+    <LinearLayout
+        android:id="@+id/chatInputContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="vertical"
+        android:background="?android:attr/colorBackground"
+        android:elevation="8dp"
+        android:padding="12dp"
+        android:visibility="visible">
+
+        <!-- Test button (Debug only) -->
+        <Button
+            android:id="@+id/testVoiceButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🧪 Test Voice Recognition"
+            android:textSize="14sp"
+            android:background="@android:color/holo_orange_light"
+            android:textColor="@android:color/white"
+            android:padding="12dp"
+            android:layout_marginBottom="8dp"
+            android:layout_gravity="center_horizontal"
+            android:visibility="gone" />
+
+        <!-- Input area -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <!-- Left toggle button (outside frame): speaker/keyboard -->
+            <ImageButton
+                android:id="@+id/leftVoiceToggleButton"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_marginEnd="6dp"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_voice_wechat"
+                android:contentDescription="Switch to voice"
+                android:scaleType="fitCenter"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:id="@+id/leftKeyboardButton"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_marginEnd="6dp"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_keyboard"
+                android:contentDescription="Switch to keyboard"
+                android:scaleType="fitCenter"
+                android:visibility="gone" />
+
+            <RelativeLayout
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/input_border">
+
+                <!-- Text mode: input field -->
+                <EditText
+                    android:id="@+id/chatInputEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:hint="Ask question"
+                    android:background="@android:color/transparent"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="80dp"
+                    android:paddingTop="10dp"
+                    android:paddingBottom="10dp"
+                    android:maxLines="1"
+                    android:singleLine="true"
+                    android:inputType="text"
+                    android:textSize="14sp"
+                    android:textColorHint="#999999"
+                    android:visibility="visible" />
+
+                <!-- Voice mode: Press to talk button -->
+                <TextView
+                    android:id="@+id/voiceTalkButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:text="@string/press_to_talk"
+                    android:textSize="16sp"
+                    android:textColor="#000000"
+                    android:textStyle="bold"
+                    android:gravity="center"
+                    android:background="@drawable/voice_talk_button_background"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:visibility="gone" />
+
+                <!-- Right buttons container inside frame (text mode) -->
+                <LinearLayout
+                    android:id="@+id/textModeButtonsContainer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_alignParentEnd="true"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingEnd="8dp"
+                    android:visibility="visible">
+
+                    <!-- Clear button -->
+                    <ImageButton
+                        android:id="@+id/chatClearButton"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:background="?android:attr/selectableItemBackgroundBorderless"
+                        android:src="@android:drawable/ic_menu_close_clear_cancel"
+                        android:contentDescription="Clear"
+                        android:scaleType="fitCenter"
+                        android:visibility="gone"
+                        android:layout_marginEnd="4dp" />
+
+                    <!-- Voice input button (inside frame) -->
+                    <ImageButton
+                        android:id="@+id/chatVoiceButton"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:background="?android:attr/selectableItemBackgroundBorderless"
+                        android:src="@android:drawable/ic_btn_speak_now"
+                        android:contentDescription="Voice input"
+                        android:scaleType="fitCenter"
+                        android:visibility="visible" />
+
+                </LinearLayout>
+
+            </RelativeLayout>
+
+            <!-- Circular send button -->
+            <ImageButton
+                android:id="@+id/chatSendButton"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/send_button_circle"
+                android:src="@drawable/ic_arrow_up"
+                android:contentDescription="Send"
+                android:scaleType="center"
+                android:enabled="false" />
+
+        </LinearLayout>
+
+        <!-- Function buttons area -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="4dp"
+            android:gravity="start">
+
+            <!-- Thinking button -->
+            <ToggleButton
+                android:id="@+id/thinkingToggle"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:textOn="🧠 Thinking"
+                android:textOff="🧠 Thinking"
+                android:textSize="14sp"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:background="@drawable/thinking_button_border"
+                android:textColor="@color/toggle_button_text_color_flat"
+                android:checked="false"
+                android:layout_marginEnd="16dp"
+                android:minWidth="0dp"
+                android:minHeight="0dp" />
+
+            <!-- Internet button - Hidden -->
+            <ToggleButton
+                android:id="@+id/internetToggle"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:visibility="gone"
+                android:textOn="🌐 Internet"
+                android:textOff="🌐 Internet"
+                android:textSize="14sp"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:background="?android:attr/selectableItemBackground"
+                android:textColor="@color/toggle_button_text_color_flat"
+                android:checked="false"
+                android:minWidth="0dp"
+                android:minHeight="0dp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- 加载指示器 -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:visibility="gone" />
+
+</RelativeLayout>
+
+<!-- Drawer Menu -->
+<LinearLayout
+    android:layout_width="280dp"
+    android:layout_height="match_parent"
+    android:layout_gravity="start"
+    android:orientation="vertical"
+    android:background="?android:attr/colorBackground"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:id="@+id/userProfileSection"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingTop="32dp"
+        android:paddingBottom="24dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="?android:attr/selectableItemBackground">
+        <TextView
+            android:id="@+id/userAvatar"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:text="👤"
+            android:textSize="32sp"
+            android:gravity="center"
+            android:background="@drawable/default_avatar_background" />
+        <TextView
+            android:id="@+id/userNameOrLogin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Click to Login"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="?android:attr/textColorPrimary"
+            android:layout_marginStart="12dp" />
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#E0E0E0"
+        android:layout_marginBottom="16dp" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:id="@+id/menuChatHistory"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:background="?android:attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true">
+                <TextView android:layout_width="24dp" android:layout_height="24dp" android:text="💬" android:textSize="20sp" android:gravity="center" />
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Chat History" android:textSize="16sp" android:textColor="?android:attr/textColorPrimary" android:layout_marginStart="16dp" />
+            </LinearLayout>
+            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#E0E0E0" android:layout_marginStart="56dp" />
+
+            <LinearLayout
+                android:id="@+id/menuSettings"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:background="?android:attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true">
+                <TextView android:layout_width="24dp" android:layout_height="24dp" android:text="⚙️" android:textSize="20sp" android:gravity="center" />
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Settings" android:textSize="16sp" android:textColor="?android:attr/textColorPrimary" android:layout_marginStart="16dp" />
+            </LinearLayout>
+            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#E0E0E0" android:layout_marginStart="56dp" />
+
+            <LinearLayout
+                android:id="@+id/menuLanguage"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:background="?android:attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true">
+                <TextView android:layout_width="24dp" android:layout_height="24dp" android:text="🌐" android:textSize="20sp" android:gravity="center" />
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Language" android:textSize="16sp" android:textColor="?android:attr/textColorPrimary" android:layout_marginStart="16dp" />
+            </LinearLayout>
+            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#E0E0E0" android:layout_marginStart="56dp" />
+
+            <LinearLayout
+                android:id="@+id/menuUpgrade"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:background="?android:attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true">
+                <TextView android:layout_width="24dp" android:layout_height="24dp" android:text="⬆️" android:textSize="20sp" android:gravity="center" />
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Upgrade Plan" android:textSize="16sp" android:textColor="?android:attr/textColorPrimary" android:layout_marginStart="16dp" />
+            </LinearLayout>
+            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#E0E0E0" android:layout_marginStart="56dp" />
+
+            <LinearLayout
+                android:id="@+id/menuLearnMore"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:background="?android:attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true">
+                <TextView android:layout_width="24dp" android:layout_height="24dp" android:text="ℹ️" android:textSize="20sp" android:gravity="center" />
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Learn More" android:textSize="16sp" android:textColor="?android:attr/textColorPrimary" android:layout_marginStart="16dp" />
+            </LinearLayout>
+            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#E0E0E0" android:layout_marginStart="56dp" />
+
+            <LinearLayout
+                android:id="@+id/menuHelp"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:background="?android:attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true">
+                <TextView android:layout_width="24dp" android:layout_height="24dp" android:text="❓" android:textSize="20sp" android:gravity="center" />
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Get Help" android:textSize="16sp" android:textColor="?android:attr/textColorPrimary" android:layout_marginStart="16dp" />
+            </LinearLayout>
+            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#E0E0E0" android:layout_marginStart="56dp" />
+
+            <LinearLayout
+                android:id="@+id/menuLogout"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:background="?android:attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:visibility="gone">
+                <TextView android:layout_width="24dp" android:layout_height="24dp" android:text="🚪" android:textSize="20sp" android:gravity="center" />
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Logout" android:textSize="16sp" android:textColor="?android:attr/textColorPrimary" android:layout_marginStart="16dp" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>
+
+</androidx.drawerlayout.widget.DrawerLayout>

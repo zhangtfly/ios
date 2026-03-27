@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">阳光清言</string>
+    <string name="press_to_talk">按住说话</string>
+    <string name="recording">正在说话...</string>
+    <string name="loading">正在思考...</string>
+    
+    <!-- 登录注册相关 - 中文 -->
+    <string name="click_to_login">点击登录</string>
+    <string name="login_title">登录</string>
+    <string name="register_title">注册</string>
+    <string name="hint_username">请输入用户昵称</string>
+    <string name="hint_account">请输入账号</string>
+    <string name="login_hint">无需密码，直接输入账号登录</string>
+    <string name="register_hint">系统将自动设置默认密码</string>
+    <string name="login_button">登录</string>
+    <string name="register_button">注册</string>
+    <string name="switch_to_register">还没有账号？点击注册</string>
+    <string name="switch_to_login">已有账号？点击登录</string>
+    <string name="logout">退出登录</string>
+    <string name="logging_in">登录中...</string>
+    <string name="registering">注册中...</string>
+    <string name="login_success">登录成功</string>
+    <string name="login_failed">登录失败</string>
+    <string name="register_success">注册成功，请登录</string>
+    <string name="register_failed">注册失败</string>
+    <string name="network_error">网络错误</string>
+</resources>

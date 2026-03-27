@@ -1,0 +1,19 @@
+# macOS
+.DS_Store
+
+# Local configuration
+local.properties
+
+# Gradle
+.gradle/
+
+# Build outputs
+build/
+*/build/
+
+# IDE
+.idea/
+*.iml
+
+# Logs
+*.log

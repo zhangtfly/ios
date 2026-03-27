@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="280dp"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/voice_dialog_background"
+    android:gravity="center"
+    android:padding="32dp">
+    
+    <!-- 麦克风图标 -->
+    <ImageView
+        android:id="@+id/micIcon"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:src="@android:drawable/ic_btn_speak_now"
+        android:tint="#FFFFFF"
+        android:layout_marginBottom="16dp"/>
+    
+    <!-- 波形图 -->
+    <com.example.myapplication.VoiceWaveformView
+        android:id="@+id/waveformView"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_marginBottom="16dp"/>
+    
+    <!-- 提示文本 -->
+    <TextView
+        android:id="@+id/voiceHintText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="松开发送，上滑取消"
+        android:textColor="#FFFFFF"
+        android:textSize="14sp"
+        android:gravity="center"/>
+    
+    <!-- 音量指示器（调试用，可选） -->
+    <TextView
+        android:id="@+id/volumeText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text=""
+        android:textColor="#CCFFFFFF"
+        android:textSize="12sp"
+        android:visibility="gone"/>
+</LinearLayout>

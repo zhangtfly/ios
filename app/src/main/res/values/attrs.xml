@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Custom chat background attributes -->
+    <attr name="chatAnswerBackground" format="color|reference" />
+    <attr name="chatThinkingBackground" format="color|reference" />
+</resources>
