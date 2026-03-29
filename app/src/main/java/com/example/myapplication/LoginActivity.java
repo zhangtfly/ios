@@ -268,7 +268,8 @@ public class LoginActivity extends AppCompatActivity {
                                         loginResponse.getId(),
                                         loginResponse.getUserName(),
                                         loginResponse.getUserAccount(),
-                                        loginResponse.getUserAvatar()
+                                        loginResponse.getUserAvatar(),
+                                        ""
                                 );
 
                                 Toast.makeText(LoginActivity.this, getString(R.string.login_success), Toast.LENGTH_SHORT).show();

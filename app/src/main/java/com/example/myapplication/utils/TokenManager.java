@@ -10,6 +10,7 @@ public class TokenManager {
     private static final String KEY_USER_NAME = "user_name";
     private static final String KEY_USER_ACCOUNT = "user_account";
     private static final String KEY_USER_AVATAR = "user_avatar";
+    private static final String KEY_USER_PASSWORD = "user_password";
 
     private final SharedPreferences prefs;
 
@@ -17,13 +18,14 @@ public class TokenManager {
         prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
     }
     
-    public void saveUserInfo(String token, Long userId, String userName, String userAccount, String userAvatar) {
+    public void saveUserInfo(String token, String userId, String userName, String userAccount, String userAvatar,String password) {
         prefs.edit()
                 .putString(KEY_TOKEN, token)
-                .putLong(KEY_USER_ID, userId)
+                .putString(KEY_USER_ID, userId)
                 .putString(KEY_USER_NAME, userName)
                 .putString(KEY_USER_ACCOUNT, userAccount)
                 .putString(KEY_USER_AVATAR, userAvatar)
+                .putString(KEY_USER_PASSWORD, password)
                 .apply();
     }
     
@@ -46,7 +48,9 @@ public class TokenManager {
     public String getUserAvatar() {
         return prefs.getString(KEY_USER_AVATAR, null);
     }
-    
+    public String getUserPassword() {
+        return prefs.getString(KEY_USER_PASSWORD, null);
+    }
     public boolean isLoggedIn() {
         return getToken() != null;
     }

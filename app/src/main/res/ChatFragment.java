@@ -35,6 +35,8 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import com.example.myapplication.login.LoginV2Activity;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -878,7 +880,7 @@ public class ChatFragment extends Fragment {
     }
     
     private void showLoginDialog() {
-        Intent intent = new Intent(getActivity(), LoginActivity.class);
+        Intent intent = new Intent(getActivity(), LoginV2Activity.class);
         startActivity(intent);
     }
     

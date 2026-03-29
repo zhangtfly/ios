@@ -6,6 +6,8 @@ import androidx.fragment.app.Fragment;
 
 import android.os.Bundle;
 
+import com.example.myapplication.login.LoginV2Activity;
+
 public class MainActivity extends AppCompatActivity implements LanguageManager.OnLanguageChangeListener {
 
     private static final int LOGIN_REQUEST_CODE = 1001;
@@ -23,7 +25,7 @@ public class MainActivity extends AppCompatActivity implements LanguageManager.O
         com.example.myapplication.utils.TokenManager tokenManager =
             new com.example.myapplication.utils.TokenManager(this);
         if (!tokenManager.isLoggedIn()) {
-            Intent intent = new Intent(this, LoginActivity.class);
+            Intent intent = new Intent(this, LoginV2Activity.class);
             startActivityForResult(intent, LOGIN_REQUEST_CODE);
             return;
         }
@@ -33,9 +35,9 @@ public class MainActivity extends AppCompatActivity implements LanguageManager.O
         languageManager = LanguageManager.getInstance(this);
 
         // 确保初始语言是藏文
-        if (savedInstanceState == null) {
-            languageManager.setLanguage(LanguageManager.LANGUAGE_TIBETAN);
-        }
+//        if (savedInstanceState == null) {
+//            languageManager.setLanguage(LanguageManager.LANGUAGE_TIBETAN);
+//        }
 
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
@@ -43,6 +45,7 @@ public class MainActivity extends AppCompatActivity implements LanguageManager.O
                     .commit();
         }
     }
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -59,7 +62,7 @@ public class MainActivity extends AppCompatActivity implements LanguageManager.O
             // 已登录，重新初始化界面
             setContentView(R.layout.activity_main);
             languageManager = LanguageManager.getInstance(this);
-            languageManager.setLanguage(LanguageManager.LANGUAGE_TIBETAN);
+//            languageManager.setLanguage(LanguageManager.LANGUAGE_TIBETAN);
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragmentContainer, createChatFragment())
                     .commit();

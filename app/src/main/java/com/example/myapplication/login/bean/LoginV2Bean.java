@@ -1,20 +1,18 @@
-package com.example.myapplication.api.model;
+package com.example.myapplication.login.bean;
 
-import java.util.Date;
+public class LoginV2Bean {
 
-/**
- * 登录响应
- */
-public class LoginResponse {
     private String id;
     private String userName;
     private String userAccount;
     private String userAvatar;
-    private String userProfile;
+    private Object userProfile;
     private String userRole;
-    private Date createTime;
+    private int accountStatus;
+    private String accountStatusText;
+    private String createTime;
     private String token;
-    private Long tokenExpireTime;
+    private long tokenExpireTime;
 
     public String getId() {
         return id;
@@ -48,11 +46,11 @@ public class LoginResponse {
         this.userAvatar = userAvatar;
     }
 
-    public String getUserProfile() {
+    public Object getUserProfile() {
         return userProfile;
     }
 
-    public void setUserProfile(String userProfile) {
+    public void setUserProfile(Object userProfile) {
         this.userProfile = userProfile;
     }
 
@@ -64,11 +62,27 @@ public class LoginResponse {
         this.userRole = userRole;
     }
 
-    public Date getCreateTime() {
+    public int getAccountStatus() {
+        return accountStatus;
+    }
+
+    public void setAccountStatus(int accountStatus) {
+        this.accountStatus = accountStatus;
+    }
+
+    public String getAccountStatusText() {
+        return accountStatusText;
+    }
+
+    public void setAccountStatusText(String accountStatusText) {
+        this.accountStatusText = accountStatusText;
+    }
+
+    public String getCreateTime() {
         return createTime;
     }
 
-    public void setCreateTime(Date createTime) {
+    public void setCreateTime(String createTime) {
         this.createTime = createTime;
     }
 
@@ -80,11 +94,11 @@ public class LoginResponse {
         this.token = token;
     }
 
-    public Long getTokenExpireTime() {
+    public long getTokenExpireTime() {
         return tokenExpireTime;
     }
 
-    public void setTokenExpireTime(Long tokenExpireTime) {
+    public void setTokenExpireTime(long tokenExpireTime) {
         this.tokenExpireTime = tokenExpireTime;
     }
 }

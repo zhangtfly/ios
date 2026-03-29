@@ -52,8 +52,31 @@ dependencies {
     
     // Markdown渲染库
     implementation 'io.noties.markwon:core:4.6.2'
+
+    implementation 'com.github.getActivity:ShapeView:10.0'
+    implementation 'com.google.android.flexbox:flexbox:3.0.0'
+    implementation 'com.github.getActivity:Toaster:13.8'
+    implementation 'com.geyifeng.immersionbar:immersionbar:3.2.2'
+    // 网络请求框架：https://github.com/getActivity/EasyHttp
+    implementation 'com.github.getActivity:EasyHttp:13.5'
+    // OkHttp 框架：https://github.com/square/okhttp
+    // noinspection GradleDependency
+    implementation 'com.squareup.okhttp3:okhttp:5.3.0'
+    implementation 'com.github.getActivity:GsonFactory:10.5'
+    implementation 'com.github.getActivity:EasyWindow:13.5'
+    implementation 'com.airbnb.android:lottie:6.4.0'
+    implementation 'com.github.getActivity:TitleBar:10.8'
     
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+
+    // 强制降级 startup 版本，兼容 compileSdk 33
+    constraints {
+        implementation('androidx.startup:startup-runtime') {
+            version {
+                strictly '1.1.1'
+            }
+        }
+    }
 }
