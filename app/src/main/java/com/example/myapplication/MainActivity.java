@@ -1,14 +1,18 @@
 package com.example.myapplication;
 
 import android.content.Intent;
+
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
 import android.os.Bundle;
 
+import com.example.myapplication.base.BaseActivity;
 import com.example.myapplication.login.LoginV2Activity;
+import com.gyf.immersionbar.ImmersionBar;
 
-public class MainActivity extends AppCompatActivity implements LanguageManager.OnLanguageChangeListener {
+public class MainActivity extends BaseActivity implements LanguageManager.OnLanguageChangeListener {
 
     private static final int LOGIN_REQUEST_CODE = 1001;
     private LanguageManager languageManager;
@@ -117,5 +121,11 @@ public class MainActivity extends AppCompatActivity implements LanguageManager.O
         super.onNewIntent(intent);
         setIntent(intent);
         
+    }
+
+    @NonNull
+    @Override
+    public ImmersionBar getStatusBarConfig() {
+        return super.getStatusBarConfig().keyboardEnable(true);
     }
 }

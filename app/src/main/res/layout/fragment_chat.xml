@@ -131,7 +131,7 @@
         android:layout_marginStart="24dp"
         android:layout_marginTop="8dp"
         android:text="གྲོགས་པོ། དེ་རིང་གང་ནས་འགོ་རྩོམ་རྒྱུ་ཡིན།"
-        android:textSize="28sp"
+        android:textSize="25dp"
         android:textStyle="bold"
         android:textColor="?android:attr/textColorPrimary"
         android:visibility="visible" />
@@ -203,12 +203,11 @@
             <androidx.cardview.widget.CardView
                 android:id="@+id/smartQAButton"
                 android:layout_width="0dp"
-                android:layout_height="160dp"
+                android:layout_height="100dp"
                 android:layout_row="0"
                 android:layout_column="0"
                 android:layout_columnWeight="1"
                 android:layout_margin="8dp"
-                android:layout_marginTop="40dp"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="2dp"
                 app:cardBackgroundColor="@android:color/transparent"
@@ -220,7 +219,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:orientation="vertical"
-                    android:padding="16dp"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="10dp"
                     android:gravity="start"
                     android:background="@drawable/gradient_card_1">
 
@@ -248,7 +248,7 @@
             <androidx.cardview.widget.CardView
                 android:id="@+id/smartTranslateButton"
                 android:layout_width="0dp"
-                android:layout_height="160dp"
+                android:layout_height="100dp"
                 android:layout_row="0"
                 android:layout_column="1"
                 android:layout_columnWeight="1"
@@ -264,7 +264,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:orientation="vertical"
-                    android:padding="16dp"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="10dp"
                     android:gravity="start"
                     android:background="@drawable/gradient_card_2">
 
@@ -292,12 +293,11 @@
             <androidx.cardview.widget.CardView
                 android:id="@+id/semanticButton"
                 android:layout_width="0dp"
-                android:layout_height="160dp"
+                android:layout_height="100dp"
                 android:layout_row="1"
                 android:layout_column="0"
                 android:layout_columnWeight="1"
                 android:layout_margin="8dp"
-                android:layout_marginTop="40dp"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="2dp"
                 app:cardBackgroundColor="@android:color/transparent"
@@ -309,7 +309,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:orientation="vertical"
-                    android:padding="16dp"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="10dp"
                     android:gravity="start"
                     android:background="@drawable/gradient_card_3">
 
@@ -337,7 +338,7 @@
             <androidx.cardview.widget.CardView
                 android:id="@+id/fourthButton"
                 android:layout_width="0dp"
-                android:layout_height="160dp"
+                android:layout_height="100dp"
                 android:layout_row="1"
                 android:layout_column="1"
                 android:layout_columnWeight="1"
@@ -354,7 +355,8 @@
                     android:layout_height="match_parent"
                     android:background="@drawable/gradient_card_4"
                     android:orientation="vertical"
-                    android:padding="16dp"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="10dp"
                     android:gravity="start">
 
                     <TextView
@@ -577,6 +579,19 @@
                 android:layout_marginEnd="16dp"
                 android:minWidth="0dp"
                 android:minHeight="0dp" />
+            <com.hjq.shape.view.ShapeTextView
+                android:id="@+id/save_img"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:text="འགྲུབ་བཟུང་"
+                app:shape_solidColor="@color/white"
+                app:shape_strokeColor="#BBBBBB"
+                app:shape_strokeSize="1dp"
+                app:shape_radius="20dp"
+                android:paddingHorizontal="12dp"
+                android:layout_gravity="center_vertical"
+                android:gravity="center_vertical"
+                android:textSize="14dp"/>
 
             <!-- 联网按钮 - 已隐藏 -->
             <ToggleButton
@@ -669,6 +684,7 @@
                 android:layout_height="56dp"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
+                android:layout_gravity="center_vertical"
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
                 android:background="?android:attr/selectableItemBackground"
@@ -677,7 +693,8 @@
                 <TextView android:layout_width="24dp" android:layout_height="24dp" android:text="💬" android:textSize="20sp" android:gravity="center" />
                 <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="ཁ་བརྡའི་ལོ་རྒྱུས།" android:textSize="16sp" android:textColor="?android:attr/textColorPrimary" android:layout_marginStart="16dp" />
             </LinearLayout>
-            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#E0E0E0" android:layout_marginStart="56dp" />
+            <View android:layout_width="match_parent"
+                android:visibility="gone" android:layout_height="1dp" android:background="#E0E0E0" android:layout_marginStart="56dp" />
 
             <LinearLayout
                 android:id="@+id/menuSettings"
@@ -687,13 +704,15 @@
                 android:gravity="center_vertical"
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
+                android:visibility="gone"
                 android:background="?android:attr/selectableItemBackground"
                 android:clickable="true"
                 android:focusable="true">
                 <TextView android:layout_width="24dp" android:layout_height="24dp" android:text="⚙️" android:textSize="20sp" android:gravity="center" />
                 <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="སྒྲིག་འགོད།" android:textSize="16sp" android:textColor="?android:attr/textColorPrimary" android:layout_marginStart="16dp" />
             </LinearLayout>
-            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#E0E0E0" android:layout_marginStart="56dp" />
+            <View android:layout_width="match_parent"
+                android:visibility="gone" android:layout_height="1dp" android:background="#E0E0E0" android:layout_marginStart="56dp" />
 
             <LinearLayout
                 android:id="@+id/menuLanguage"
@@ -703,13 +722,15 @@
                 android:gravity="center_vertical"
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
+                android:visibility="gone"
                 android:background="?android:attr/selectableItemBackground"
                 android:clickable="true"
                 android:focusable="true">
                 <TextView android:layout_width="24dp" android:layout_height="24dp" android:text="🌐" android:textSize="20sp" android:gravity="center" />
                 <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="སྐད་རིགས།" android:textSize="16sp" android:textColor="?android:attr/textColorPrimary" android:layout_marginStart="16dp" />
             </LinearLayout>
-            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#E0E0E0" android:layout_marginStart="56dp" />
+            <View android:layout_width="match_parent"
+                android:visibility="gone" android:layout_height="1dp" android:background="#E0E0E0" android:layout_marginStart="56dp" />
 
             <LinearLayout
                 android:id="@+id/menuUpgrade"
@@ -721,11 +742,13 @@
                 android:paddingEnd="16dp"
                 android:background="?android:attr/selectableItemBackground"
                 android:clickable="true"
+                android:visibility="gone"
                 android:focusable="true">
                 <TextView android:layout_width="24dp" android:layout_height="24dp" android:text="⬆️" android:textSize="20sp" android:gravity="center" />
                 <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="རིམ་སྤར་འཆར་གཞི།" android:textSize="16sp" android:textColor="?android:attr/textColorPrimary" android:layout_marginStart="16dp" />
             </LinearLayout>
-            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#E0E0E0" android:layout_marginStart="56dp" />
+            <View android:layout_width="match_parent"
+                android:visibility="gone" android:layout_height="1dp" android:background="#E0E0E0" android:layout_marginStart="56dp" />
 
             <LinearLayout
                 android:id="@+id/menuLearnMore"
@@ -737,11 +760,13 @@
                 android:paddingEnd="16dp"
                 android:background="?android:attr/selectableItemBackground"
                 android:clickable="true"
+                android:visibility="gone"
                 android:focusable="true">
                 <TextView android:layout_width="24dp" android:layout_height="24dp" android:text="ℹ️" android:textSize="20sp" android:gravity="center" />
                 <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="ཤེས་རྟོགས་བྱེད་པ།" android:textSize="16sp" android:textColor="?android:attr/textColorPrimary" android:layout_marginStart="16dp" />
             </LinearLayout>
-            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#E0E0E0" android:layout_marginStart="56dp" />
+            <View android:layout_width="match_parent"
+                android:visibility="gone" android:layout_height="1dp" android:background="#E0E0E0" android:layout_marginStart="56dp" />
 
             <LinearLayout
                 android:id="@+id/menuHelp"
@@ -753,11 +778,13 @@
                 android:paddingEnd="16dp"
                 android:background="?android:attr/selectableItemBackground"
                 android:clickable="true"
+                android:visibility="gone"
                 android:focusable="true">
                 <TextView android:layout_width="24dp" android:layout_height="24dp" android:text="❓" android:textSize="20sp" android:gravity="center" />
                 <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="རོགས་རམ་ཞུ་བ།" android:textSize="16sp" android:textColor="?android:attr/textColorPrimary" android:layout_marginStart="16dp" />
             </LinearLayout>
-            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#E0E0E0" android:layout_marginStart="56dp" />
+            <View android:layout_width="match_parent"
+                android:visibility="gone" android:layout_height="1dp" android:background="#E0E0E0" android:layout_marginStart="56dp" />
 
             <LinearLayout
                 android:id="@+id/menuLogout"

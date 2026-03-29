@@ -90,6 +90,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:background="#E0E0E0"
+                android:visibility="gone"
                 android:layout_marginStart="56dp" />
 
             <!-- 设置 -->
@@ -101,6 +102,7 @@
                 android:gravity="center_vertical"
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
+                android:visibility="gone"
                 android:background="?android:attr/selectableItemBackground"
                 android:clickable="true"
                 android:focusable="true">
@@ -128,6 +130,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:background="#E0E0E0"
+                android:visibility="gone"
                 android:layout_marginStart="56dp" />
 
             <!-- 语言 -->
@@ -139,6 +142,7 @@
                 android:gravity="center_vertical"
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
+                android:visibility="gone"
                 android:background="?android:attr/selectableItemBackground"
                 android:clickable="true"
                 android:focusable="true">
@@ -166,6 +170,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:background="#E0E0E0"
+                android:visibility="gone"
                 android:layout_marginStart="56dp" />
 
             <!-- 升级计划 -->
@@ -176,6 +181,7 @@
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
                 android:paddingStart="16dp"
+                android:visibility="gone"
                 android:paddingEnd="16dp"
                 android:background="?android:attr/selectableItemBackground"
                 android:clickable="true"
@@ -203,6 +209,7 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
+                android:visibility="gone"
                 android:background="#E0E0E0"
                 android:layout_marginStart="56dp" />
 
@@ -215,6 +222,7 @@
                 android:gravity="center_vertical"
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
+                android:visibility="gone"
                 android:background="?android:attr/selectableItemBackground"
                 android:clickable="true"
                 android:focusable="true">
@@ -241,6 +249,7 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
+                android:visibility="gone"
                 android:background="#E0E0E0"
                 android:layout_marginStart="56dp" />
 
@@ -253,6 +262,7 @@
                 android:gravity="center_vertical"
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
+                android:visibility="gone"
                 android:background="?android:attr/selectableItemBackground"
                 android:clickable="true"
                 android:focusable="true">

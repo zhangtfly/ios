@@ -129,7 +129,7 @@
         android:layout_marginStart="24dp"
         android:layout_marginTop="8dp"
         android:text="嗨，今天从哪里开始呢？"
-        android:textSize="28sp"
+        android:textSize="25dp"
         android:textStyle="bold"
         android:textColor="?android:attr/textColorPrimary"
         android:visibility="visible" />
@@ -201,12 +201,11 @@
             <androidx.cardview.widget.CardView
                 android:id="@+id/smartQAButton"
                 android:layout_width="0dp"
-                android:layout_height="160dp"
+                android:layout_height="100dp"
                 android:layout_row="0"
                 android:layout_column="0"
                 android:layout_columnWeight="1"
                 android:layout_margin="8dp"
-                android:layout_marginTop="40dp"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="2dp"
                 app:cardBackgroundColor="@android:color/transparent"
@@ -218,7 +217,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:orientation="vertical"
-                    android:padding="16dp"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="10dp"
                     android:gravity="start"
                     android:background="@drawable/gradient_card_1">
 
@@ -228,8 +228,7 @@
                         android:layout_weight="1"
                         android:text="@string/suggestion_card_1_zh"
                         android:textSize="15sp"
-                        android:textColor="#333333"
-                        android:lineSpacingExtra="2dp" />
+                        android:textColor="#333333" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -246,7 +245,7 @@
             <androidx.cardview.widget.CardView
                 android:id="@+id/smartTranslateButton"
                 android:layout_width="0dp"
-                android:layout_height="160dp"
+                android:layout_height="100dp"
                 android:layout_row="0"
                 android:layout_column="1"
                 android:layout_columnWeight="1"
@@ -262,7 +261,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:orientation="vertical"
-                    android:padding="16dp"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="10dp"
                     android:gravity="start"
                     android:background="@drawable/gradient_card_2">
 
@@ -272,8 +272,7 @@
                         android:layout_weight="1"
                         android:text="写一首赞美老师的诗。"
                         android:textSize="15sp"
-                        android:textColor="#333333"
-                        android:lineSpacingExtra="2dp" />
+                        android:textColor="#333333" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -290,12 +289,11 @@
             <androidx.cardview.widget.CardView
                 android:id="@+id/semanticButton"
                 android:layout_width="0dp"
-                android:layout_height="160dp"
+                android:layout_height="100dp"
                 android:layout_row="1"
                 android:layout_column="0"
                 android:layout_columnWeight="1"
                 android:layout_margin="8dp"
-                android:layout_marginTop="40dp"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="2dp"
                 app:cardBackgroundColor="@android:color/transparent"
@@ -307,7 +305,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:orientation="vertical"
-                    android:padding="16dp"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="10dp"
                     android:gravity="start"
                     android:background="@drawable/gradient_card_3">
 
@@ -317,8 +316,7 @@
                         android:layout_weight="1"
                         android:text="请给校长写一份毕业典礼致辞。"
                         android:textSize="15sp"
-                        android:textColor="#333333"
-                        android:lineSpacingExtra="2dp" />
+                        android:textColor="#333333" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -335,7 +333,7 @@
             <androidx.cardview.widget.CardView
                 android:id="@+id/fourthButton"
                 android:layout_width="0dp"
-                android:layout_height="160dp"
+                android:layout_height="100dp"
                 android:layout_row="1"
                 android:layout_column="1"
                 android:layout_columnWeight="1"
@@ -351,7 +349,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:orientation="vertical"
-                    android:padding="16dp"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="10dp"
                     android:gravity="start"
                     android:background="@drawable/gradient_card_4">
 
@@ -361,8 +360,7 @@
                         android:layout_weight="1"
                         android:text="学习医学的必要是什么？"
                         android:textSize="15sp"
-                        android:textColor="#333333"
-                        android:lineSpacingExtra="2dp" />
+                        android:textColor="#333333" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -401,7 +399,7 @@
             android:orientation="vertical" />
 
     </ScrollView>
-    
+
     <!-- 底部输入区域 -->
     <LinearLayout
         android:id="@+id/chatInputContainer"
@@ -409,11 +407,69 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:orientation="vertical"
-        android:background="?android:attr/colorBackground"
         android:elevation="8dp"
-        android:padding="12dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="30dp"
+        android:paddingHorizontal="12dp"
         android:visibility="visible">
+        <!-- 功能按钮区域 -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="10dp"
+            android:gravity="start">
 
+            <!-- 推理按钮 -->
+            <ToggleButton
+                android:id="@+id/thinkingToggle"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:textOn="🧠 思考"
+                android:textOff="🧠 思考"
+                android:textSize="14sp"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:background="@drawable/thinking_button_border"
+                android:textColor="@color/toggle_button_text_color_flat"
+                android:checked="false"
+                android:layout_marginEnd="16dp"
+                android:minWidth="0dp"
+                android:minHeight="0dp" />
+
+            <com.hjq.shape.view.ShapeTextView
+                android:id="@+id/save_img"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:text="上传图片"
+                app:shape_solidColor="@color/white"
+                app:shape_strokeColor="#BBBBBB"
+                app:shape_strokeSize="1dp"
+                app:shape_radius="20dp"
+                android:paddingHorizontal="12dp"
+                android:layout_gravity="center_vertical"
+                android:gravity="center_vertical"
+                android:textSize="14dp"/>
+
+            <!-- 联网按钮 - 已隐藏 -->
+            <ToggleButton
+                android:id="@+id/internetToggle"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:visibility="gone"
+                android:textOn="🌐 联网"
+                android:textOff="🌐 联网"
+                android:textSize="14sp"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:background="?android:attr/selectableItemBackground"
+                android:textColor="@color/toggle_button_text_color_flat"
+                android:checked="false"
+                android:minWidth="0dp"
+                android:minHeight="0dp" />
+
+        </LinearLayout>
         <!-- 测试按钮（仅Debug版本显示） -->
         <Button
             android:id="@+id/testVoiceButton"
@@ -549,50 +605,6 @@
 
         </LinearLayout>
 
-        <!-- 功能按钮区域 -->
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="4dp"
-            android:gravity="start">
-
-            <!-- 推理按钮 -->
-            <ToggleButton
-                android:id="@+id/thinkingToggle"
-                android:layout_width="wrap_content"
-                android:layout_height="32dp"
-                android:textOn="🧠 思考"
-                android:textOff="🧠 思考"
-                android:textSize="14sp"
-                android:paddingStart="12dp"
-                android:paddingEnd="12dp"
-                android:background="@drawable/thinking_button_border"
-                android:textColor="@color/toggle_button_text_color_flat"
-                android:checked="false"
-                android:layout_marginEnd="16dp"
-                android:minWidth="0dp"
-                android:minHeight="0dp" />
-
-            <!-- 联网按钮 - 已隐藏 -->
-            <ToggleButton
-                android:id="@+id/internetToggle"
-                android:layout_width="wrap_content"
-                android:layout_height="32dp"
-                android:visibility="gone"
-                android:textOn="🌐 联网"
-                android:textOff="🌐 联网"
-                android:textSize="14sp"
-                android:paddingStart="12dp"
-                android:paddingEnd="12dp"
-                android:background="?android:attr/selectableItemBackground"
-                android:textColor="@color/toggle_button_text_color_flat"
-                android:checked="false"
-                android:minWidth="0dp"
-                android:minHeight="0dp" />
-
-        </LinearLayout>
-
     </LinearLayout>
 
     <!-- 加载指示器 -->
@@ -621,6 +633,7 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
+        android:layout_gravity="center_vertical"
         android:paddingTop="32dp"
         android:paddingBottom="24dp"
         android:clickable="true"
@@ -632,7 +645,7 @@
             android:layout_width="60dp"
             android:layout_height="60dp"
             android:text="👤"
-            android:textSize="32sp"
+            android:textSize="32dp"
             android:gravity="center"
             android:background="@drawable/default_avatar_background" />
 
@@ -669,6 +682,7 @@
                 android:layout_height="56dp"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
+                android:layout_gravity="center_vertical"
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
                 android:background="?android:attr/selectableItemBackground"
@@ -694,6 +708,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:background="#E0E0E0"
+                android:visibility="gone"
                 android:layout_marginStart="56dp" />
 
             <LinearLayout
@@ -703,6 +718,7 @@
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
                 android:paddingStart="16dp"
+                android:visibility="gone"
                 android:paddingEnd="16dp"
                 android:background="?android:attr/selectableItemBackground"
                 android:clickable="true"
@@ -727,6 +743,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:background="#E0E0E0"
+                android:visibility="gone"
                 android:layout_marginStart="56dp" />
 
             <LinearLayout
@@ -739,6 +756,7 @@
                 android:paddingEnd="16dp"
                 android:background="?android:attr/selectableItemBackground"
                 android:clickable="true"
+                android:visibility="gone"
                 android:focusable="true">
                 <TextView
                     android:layout_width="24dp"
@@ -760,6 +778,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:background="#E0E0E0"
+                android:visibility="gone"
                 android:layout_marginStart="56dp" />
 
             <LinearLayout
@@ -772,6 +791,7 @@
                 android:paddingEnd="16dp"
                 android:background="?android:attr/selectableItemBackground"
                 android:clickable="true"
+                android:visibility="gone"
                 android:focusable="true">
                 <TextView
                     android:layout_width="24dp"
@@ -792,6 +812,7 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
+                android:visibility="gone"
                 android:background="#E0E0E0"
                 android:layout_marginStart="56dp" />
 
@@ -805,6 +826,7 @@
                 android:paddingEnd="16dp"
                 android:background="?android:attr/selectableItemBackground"
                 android:clickable="true"
+                android:visibility="gone"
                 android:focusable="true">
                 <TextView
                     android:layout_width="24dp"
@@ -826,6 +848,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:background="#E0E0E0"
+                android:visibility="gone"
                 android:layout_marginStart="56dp" />
 
             <LinearLayout
@@ -838,6 +861,7 @@
                 android:paddingEnd="16dp"
                 android:background="?android:attr/selectableItemBackground"
                 android:clickable="true"
+                android:visibility="gone"
                 android:focusable="true">
                 <TextView
                     android:layout_width="24dp"
@@ -854,7 +878,9 @@
                     android:textColor="?android:attr/textColorPrimary"
                     android:layout_marginStart="16dp" />
             </LinearLayout>
-            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#E0E0E0" android:layout_marginStart="56dp" />
+            <View android:layout_width="match_parent"
+                android:visibility="gone"
+                android:layout_height="1dp" android:background="#E0E0E0" android:layout_marginStart="56dp" />
 
             <LinearLayout
                 android:id="@+id/menuLogout"

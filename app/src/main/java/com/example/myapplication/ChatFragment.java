@@ -1,18 +1,21 @@
 package com.example.myapplication;
 
+import static android.app.Activity.RESULT_OK;
+
 import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.MediaStore;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -36,7 +39,21 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import com.example.myapplication.http.api.SendMessageApi;
+import com.example.myapplication.http.BaseUrl;
+import com.example.myapplication.http.model.HttpData;
 import com.example.myapplication.login.LoginV2Activity;
+import com.example.myapplication.login.bean.LoginV2Bean;
+import com.example.myapplication.login.utils.Base64Util;
+import com.example.myapplication.utils.TokenManager;
+import com.hjq.http.EasyConfig;
+import com.hjq.http.EasyHttp;
+import com.hjq.http.listener.HttpCallbackProxy;
+import com.hjq.http.listener.OnHttpListener;
+import com.hjq.permissions.XXPermissions;
+import com.hjq.permissions.permission.PermissionLists;
+import com.hjq.shape.view.ShapeTextView;
+import com.hjq.toast.Toaster;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -57,8 +74,8 @@ import okhttp3.Response;
 
 import io.noties.markwon.Markwon;
 
-public class ChatFragment extends Fragment {
-    
+public class ChatFragment extends Fragment implements OnHttpListener {
+    private static final int REQUEST_ALBUM = 1001;
     private SwitchCompat deepThinkingSwitch;
     private TextView modelSelectorText;
     private LinearLayout chatMessagesContainer;
@@ -68,9 +85,9 @@ public class ChatFragment extends Fragment {
     private View titleLayout;
     private TextView titleText;
     private LinearLayout topBar;
-    
+
     private androidx.drawerlayout.widget.DrawerLayout drawerLayout;
-    
+
     private EditText chatInputEditText;
     private ImageButton chatSendButton;
     private ImageButton chatClearButton;
@@ -78,54 +95,55 @@ public class ChatFragment extends Fragment {
     private TextView chatVoiceHintText;
     private View chatInputContainer;
     private ImageButton backButton;
-    
+
     private View smartQAButton;
     private View smartTranslateButton;
     private View semanticButton;
     private View fourthButton;
-    
+
     private View chatGreetingLayout;
     private ImageButton chatIconButton;
     private ImageButton menuButton;
     private ImageButton audioButton;
-    
+
     private ToggleButton thinkingToggle;
+    private ShapeTextView upLoadImg;
     private ToggleButton internetToggle;
-    
+
     private SpeechRecognitionManager speechManager;
     private boolean isVoiceMode = false;
     private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
-    
+
     private TtsManager ttsManager;
     private RealtimeTtsManager realtimeTtsManager;  // 新增：实时TTS管理器
     private ImageButton currentPlayingButton;
-    
+
     // 自动播报状态管理
     private boolean isAutoPlayEnabled = false;  // 默认禁用自动播报
-    
+
     private TextView voiceTalkButton;  // 改为TextView以避免Material主题覆盖
-    
+
     // 新增：左侧切换按钮
     private ImageButton leftVoiceToggleButton;  // 喇叭按钮（切换到语音模式）
     private ImageButton leftKeyboardButton;     // 键盘按钮（切换回文本模式）
     private LinearLayout textModeButtonsContainer; // 文本模式按钮容器
-    
+
     private Button testVoiceButton;
-    
+
     private Button languageSwitchButton;
-    
+
     // 语音波形弹窗相关
     private android.widget.PopupWindow voicePopup;  // 改用PopupWindow以精确控制位置
     private VoiceWaveformView waveformView;
     private TextView volumeText;
     private TextView cancelHintBox;  // 取消提示框
-    
+
     private OkHttpClient client;
     private Markwon markwon;
-    
-    private static final String SERVER_URL = "https://sunshineglmapp.utibet.edu.cn/v1/chat/completions";
+
+    private static final String SERVER_URL = BaseUrl.BaseUrl + "api/v1/chat/completions";
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
-    
+
     // System Prompt - 定义AI身份和预设问答
     private static final String SYSTEM_PROMPT =
             "You are ཉི་འོད་བོད་ཡིག་དཔེ་དབྱིབས་ཆེན་མོ། (SunshineGLM)，also known as \"阳光清言藏语大模型\" in Chinese.  \n" +
@@ -193,66 +211,67 @@ public class ChatFragment extends Fragment {
     private String currentQuestion;
     private String currentAnswer;
     private String currentThinkingContent;
-    private String currentSessionId; 
-    private boolean isNewSession = true; 
-    
+    private String currentSessionId;
+    private boolean isNewSession = true;
+
     private List<JSONObject> conversationHistory;
-    
+
     // 新增：待删除的消息索引（点击修改按钮时设置）
     private int pendingDeleteIndex = -1;
-    
+
     private boolean isFirstMessage = true;
     private boolean isGenerating = false;
     private Handler streamHandler;
-    
+
     // 问题1修复：用户手动滚动标志
     private boolean userIsScrolling = false;
     private Handler scrollResetHandler = new Handler(Looper.getMainLooper());
     private Runnable scrollResetRunnable = null; // 保存重置任务的引用
-    
+
     private SpeechRecognizer speechRecognizer;
     private boolean isChatVoiceMode = false;
-    
+
     private StringBuilder streamingTextBuffer = new StringBuilder();
     private StringBuilder thinkingTextBuffer = new StringBuilder();
-    
-    private static final long UI_UPDATE_THROTTLE_MS = 100; 
+
+    private static final long UI_UPDATE_THROTTLE_MS = 100;
     private long lastUIUpdateTime = 0;
     private Handler uiUpdateHandler;
     private Runnable pendingUIUpdate;
     private boolean hasPendingUpdate = false;
-    
+
     private static final String DEFAULT_ANSWER = "这是一个示例回答。在实际应用中，这里会显示大模型生成的回答内容。回答会以流式方式逐字显示，给用户更好的交互体验。";
     private static final String DEFAULT_THINKING = "正在分析问题的关键要素...\n理解用户意图和上下文信息...\n检索相关知识和信息...\n组织答案结构和逻辑...";
+    private String imageBase64;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        
+
         String language = getArguments() != null ? getArguments().getString("language") : LanguageManager.LANGUAGE_TIBETAN;
         if (language == null) {
             language = LanguageManager.getInstance(getContext()).getLanguage();
         }
-        
+
         int layoutId = getLayoutByLanguage(language);
         View view = inflater.inflate(layoutId, container, false);
-        
+
         initViews(view);
         setupClient();
         setupMarkwon();
         setupListeners();
         setupSpeechManager();
         initHistoryManager();
-        
+
         TibetanFontHelper.applyTibetanFontToView(getContext(), view);
-        
+
         setupKeyboardDismissal(view);
-        
+
         loadHistoryIfNeeded();
-        
+
         // 需求3: 打开app时预连接语音识别接口(空请求预热)
         preconnectSpeechRecognition();
-        
+
         Bundle args = getArguments();
         if (args != null && args.containsKey("history_id")) {
             view.post(new Runnable() {
@@ -286,10 +305,10 @@ public class ChatFragment extends Fragment {
                 });
             }
         }
-        
+
         return view;
     }
-    
+
     private int getLayoutByLanguage(String language) {
         switch (language) {
             case LanguageManager.LANGUAGE_CHINESE:
@@ -301,19 +320,19 @@ public class ChatFragment extends Fragment {
                 return R.layout.fragment_chat;
         }
     }
-    
+
     private void initViews(View view) {
-        
+
         modelSelectorText = view.findViewById(R.id.modelSelectorText);
         chatMessagesContainer = view.findViewById(R.id.chatMessagesContainer);
         chatScrollView = view.findViewById(R.id.chatScrollView);
         progressBar = view.findViewById(R.id.progressBar);
         centerLayout = view.findViewById(R.id.centerLayout);
-        
+
         topBar = view.findViewById(R.id.topBar);
-        
+
         drawerLayout = view.findViewById(R.id.drawerLayout);
-        
+
         chatInputEditText = view.findViewById(R.id.chatInputEditText);
         chatSendButton = view.findViewById(R.id.chatSendButton);
         chatClearButton = view.findViewById(R.id.chatClearButton);
@@ -324,74 +343,76 @@ public class ChatFragment extends Fragment {
         }
         chatInputContainer = view.findViewById(R.id.chatInputContainer);
         backButton = view.findViewById(R.id.backButton);
-        
+
         smartQAButton = view.findViewById(R.id.smartQAButton);
         smartTranslateButton = view.findViewById(R.id.smartTranslateButton);
         semanticButton = view.findViewById(R.id.semanticButton);
         fourthButton = view.findViewById(R.id.fourthButton);
-        
+
         chatGreetingLayout = view.findViewById(R.id.chatGreetingLayout);
         chatIconButton = view.findViewById(R.id.chatIconButton);
         menuButton = view.findViewById(R.id.menuButton);
-        
+
         View greetingText = view.findViewById(R.id.greetingText);
-        
+
         thinkingToggle = view.findViewById(R.id.thinkingToggle);
+        upLoadImg = view.findViewById(R.id.save_img);
         internetToggle = view.findViewById(R.id.internetToggle);
-        
+
         languageSwitchButton = view.findViewById(R.id.languageSwitchButton);
-        
+
         voiceTalkButton = view.findViewById(R.id.voiceTalkButton);
-        
+
         // 初始化新的左侧切换按钮
         leftVoiceToggleButton = view.findViewById(R.id.leftVoiceToggleButton);
         leftKeyboardButton = view.findViewById(R.id.leftKeyboardButton);
         textModeButtonsContainer = view.findViewById(R.id.textModeButtonsContainer);
-        
+
         if (voiceTalkButton != null) {
             updateVoiceButtonState(false);
             // 强制设置背景，确保不被主题覆盖
             voiceTalkButton.setBackgroundResource(R.drawable.voice_talk_button_background);
         }
-        
+
         testVoiceButton = view.findViewById(R.id.testVoiceButton);
-        
+
         audioButton = view.findViewById(R.id.audioButton);
         if (audioButton != null) {
             audioButton.setVisibility(View.VISIBLE);
             // 初始化为禁用状态图标
             updateAutoPlayButtonIcon();
         }
-    
+
     }
-    
+
     private void setRandomHintText() {
-    
+
     }
-    
+
     private void setupClient() {
         try {
-            
+
             java.security.cert.CertificateFactory cf = java.security.cert.CertificateFactory.getInstance("X.509");
             java.io.InputStream caInput = getResources().openRawResource(R.raw.fullssl);
             java.security.cert.Certificate ca;
             try {
-                ca = cf.generateCertificate(caInput);} finally {
+                ca = cf.generateCertificate(caInput);
+            } finally {
                 caInput.close();
             }
-            
+
             String keyStoreType = java.security.KeyStore.getDefaultType();
             java.security.KeyStore keyStore = java.security.KeyStore.getInstance(keyStoreType);
             keyStore.load(null, null);
             keyStore.setCertificateEntry("ca", ca);
-            
+
             String tmfAlgorithm = javax.net.ssl.TrustManagerFactory.getDefaultAlgorithm();
             javax.net.ssl.TrustManagerFactory tmf = javax.net.ssl.TrustManagerFactory.getInstance(tmfAlgorithm);
             tmf.init(keyStore);
-            
+
             javax.net.ssl.SSLContext sslContext = javax.net.ssl.SSLContext.getInstance("TLS");
             sslContext.init(null, tmf.getTrustManagers(), null);
-            
+
             javax.net.ssl.X509TrustManager trustManager = null;
             for (javax.net.ssl.TrustManager tm : tmf.getTrustManagers()) {
                 if (tm instanceof javax.net.ssl.X509TrustManager) {
@@ -399,7 +420,7 @@ public class ChatFragment extends Fragment {
                     break;
                 }
             }
-            
+
             javax.net.ssl.HostnameVerifier hostnameVerifier = javax.net.ssl.HttpsURLConnection.getDefaultHostnameVerifier();
 
             client = new OkHttpClient.Builder()
@@ -410,7 +431,9 @@ public class ChatFragment extends Fragment {
                     .retryOnConnectionFailure(true)
                     .sslSocketFactory(sslContext.getSocketFactory(), trustManager)
                     .hostnameVerifier(hostnameVerifier)
-                    .build();} catch (Exception e) {client = new OkHttpClient.Builder()
+                    .build();
+        } catch (Exception e) {
+            client = new OkHttpClient.Builder()
                     .connectTimeout(30, TimeUnit.SECONDS)
                     .readTimeout(300, TimeUnit.SECONDS)
                     .writeTimeout(30, TimeUnit.SECONDS)
@@ -419,27 +442,28 @@ public class ChatFragment extends Fragment {
                     .build();
         }
     }
-    
+
     private void setupMarkwon() {
-        markwon = Markwon.create(getContext());}
-    
+        markwon = Markwon.create(getContext());
+    }
+
     private void setupSpeechManager() {
         speechManager = new SpeechRecognitionManager(getContext(), client);
         ttsManager = new TtsManager(getContext());
         realtimeTtsManager = new RealtimeTtsManager(getContext());  // 初始化实时TTS管理器
-        
+
         // 设置实时TTS回调
         realtimeTtsManager.setCallback(new RealtimeTtsManager.RealtimeTtsCallback() {
             @Override
             public void onStart() {
                 Log.d("ChatFragment", "实时TTS开始");
             }
-            
+
             @Override
             public void onSegmentSynthesized(int segmentIndex, int totalSegments) {
                 Log.d("ChatFragment", "段落 " + segmentIndex + " 合成完成");
             }
-            
+
             @Override
             public void onComplete() {
                 Log.d("ChatFragment", "实时TTS完成");
@@ -452,7 +476,7 @@ public class ChatFragment extends Fragment {
                     });
                 }
             }
-            
+
             @Override
             public void onError(String error) {
                 Log.e("ChatFragment", "实时TTS错误: " + error);
@@ -467,7 +491,7 @@ public class ChatFragment extends Fragment {
                 }
             }
         });
-        
+
         speechManager.setCallback(new SpeechRecognitionManager.RecognitionCallback() {
             @Override
             public void onRecordingStart() {
@@ -479,7 +503,7 @@ public class ChatFragment extends Fragment {
                     }
                 });
             }
-            
+
             @Override
             public void onRecordingStop() {
                 getActivity().runOnUiThread(new Runnable() {
@@ -490,7 +514,7 @@ public class ChatFragment extends Fragment {
                     }
                 });
             }
-            
+
             @Override
             public void onRecognitionSuccess(String result) {
                 getActivity().runOnUiThread(new Runnable() {
@@ -502,7 +526,7 @@ public class ChatFragment extends Fragment {
                     }
                 });
             }
-            
+
             @Override
             public void onRecognitionError(String error) {
                 getActivity().runOnUiThread(new Runnable() {
@@ -513,7 +537,7 @@ public class ChatFragment extends Fragment {
                     }
                 });
             }
-            
+
             @Override
             public void onAmplitudeChanged(float amplitude) {
                 // 更新波形图
@@ -525,8 +549,9 @@ public class ChatFragment extends Fragment {
                     volumeText.setText(String.format("音量: %.2f", amplitude));
                 }
             }
-        });}
-    
+        });
+    }
+
     /**
      * 需求3: 预连接语音识别接口(空请求预热)
      * 在Fragment创建时调用,提前建立连接,减少首次使用延迟
@@ -547,25 +572,25 @@ public class ChatFragment extends Fragment {
             }).start();
         }
     }
-    
+
     private void setupListeners() {
-        
+
         chatSendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 sendChatMessage();
             }
         });
-        
+
         chatInputEditText.setOnEditorActionListener((v, actionId, event) -> {
             sendChatMessage();
             return true;
         });
-        
+
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                
+
                 // 停止TTS播放
                 if (ttsManager != null && ttsManager.isPlaying()) {
                     ttsManager.stop();
@@ -574,28 +599,28 @@ public class ChatFragment extends Fragment {
                         currentPlayingButton = null;
                     }
                 }
-                
+
                 // 停止实时TTS
                 if (realtimeTtsManager != null && realtimeTtsManager.isActive()) {
                     realtimeTtsManager.stop();
                 }
-                
+
                 if (isGenerating) {
                     stopGeneration();
                 }
-                
+
                 clearConversationHistory();
                 returnToSearchView();
             }
         });
-        
+
         chatClearButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 chatInputEditText.setText("");
             }
         });
-        
+
         // 左侧喇叭按钮：切换到语音模式
         if (leftVoiceToggleButton != null) {
             leftVoiceToggleButton.setOnClickListener(new View.OnClickListener() {
@@ -607,7 +632,7 @@ public class ChatFragment extends Fragment {
                 }
             });
         }
-        
+
         // 左侧键盘按钮：切换回文本模式
         if (leftKeyboardButton != null) {
             leftKeyboardButton.setOnClickListener(new View.OnClickListener() {
@@ -617,17 +642,17 @@ public class ChatFragment extends Fragment {
                 }
             });
         }
-        
+
         // 需求2: chatVoiceButton已隐藏,不需要监听器
         // 框内语音按钮已删除
-        
+
         if (voiceTalkButton != null) {
             voiceTalkButton.setOnTouchListener(new View.OnTouchListener() {
                 private float initialY = 0;
                 // 修复1: 增加上滑取消的路程,从180增加到300像素,避免误触
                 private static final float CANCEL_THRESHOLD = 300; // 上滑300像素取消
                 private boolean isCancelled = false; // 添加取消状态标志,防止重复处理
-                
+
                 @Override
                 public boolean onTouch(View v, MotionEvent event) {
                     switch (event.getAction()) {
@@ -635,27 +660,27 @@ public class ChatFragment extends Fragment {
                             // 记录初始Y坐标
                             initialY = event.getRawY();
                             isCancelled = false; // 重置取消状态
-                            
+
                             if (speechManager != null) {
                                 speechManager.startRecording();
                             }
                             return true;
-                        
+
                         case MotionEvent.ACTION_MOVE:
                             // 修复2: 添加空指针检查,防止连续取消时闪退
                             try {
                                 // 检测上滑距离
                                 float currentY = event.getRawY();
                                 float deltaY = initialY - currentY; // 正值表示上滑
-                                
+
                                 // 修复1: 提高提示显示阈值,从60%提高到70%,减少误触
                                 boolean shouldShowCancel = deltaY > CANCEL_THRESHOLD * 0.7f; // 超过70%阈值时显示提示
-                                
+
                                 // 更新波形颜色（添加空指针检查）
                                 if (waveformView != null) {
                                     waveformView.setCancelHintVisible(shouldShowCancel);
                                 }
-                                
+
                                 // 更新取消提示框的背景颜色（添加空指针检查）
                                 if (cancelHintBox != null) {
                                     if (shouldShowCancel) {
@@ -666,7 +691,7 @@ public class ChatFragment extends Fragment {
                                         cancelHintBox.setBackgroundResource(R.drawable.cancel_hint_background);
                                     }
                                 }
-                                
+
                                 if (deltaY > CANCEL_THRESHOLD && !isCancelled) {
                                     // 上滑超过阈值且未取消过,取消录音
                                     isCancelled = true; // 标记已取消,防止重复处理
@@ -681,7 +706,7 @@ public class ChatFragment extends Fragment {
                                 Log.e("ChatFragment", "处理语音滑动事件时出错", e);
                             }
                             return true;
-                            
+
                         case MotionEvent.ACTION_UP:
                         case MotionEvent.ACTION_CANCEL:
                             // 修复2: 添加try-catch和空指针检查,防止闪退
@@ -694,16 +719,16 @@ public class ChatFragment extends Fragment {
                                     // 恢复默认背景（灰色）
                                     cancelHintBox.setBackgroundResource(R.drawable.cancel_hint_background);
                                 }
-                                
+
                                 // 检查是否已经取消
                                 if (isCancelled) {
                                     // 已经在MOVE中取消了,不需要再处理
                                     return true;
                                 }
-                                
+
                                 float finalY = event.getRawY();
                                 float finalDeltaY = initialY - finalY;
-                                
+
                                 if (finalDeltaY > CANCEL_THRESHOLD) {
                                     // 松手时再次检查,确保取消
                                     if (!isCancelled && speechManager != null && speechManager.isRecording()) {
@@ -713,7 +738,7 @@ public class ChatFragment extends Fragment {
                                     }
                                     return true;
                                 }
-                                
+
                                 // 正常松开,停止录音并转换
                                 if (speechManager != null && speechManager.isRecording()) {
                                     speechManager.stopRecording();
@@ -736,15 +761,16 @@ public class ChatFragment extends Fragment {
                 }
             });
         }
-        
+
         if (testVoiceButton != null) {
             testVoiceButton.setVisibility(View.GONE);
         }
-        
+
         chatInputEditText.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 boolean hasText = s.length() > 0;
@@ -752,53 +778,54 @@ public class ChatFragment extends Fragment {
                 chatSendButton.setEnabled(hasText && !isGenerating);
                 updateChatSendButtonAppearance();
             }
-            
+
             @Override
-            public void afterTextChanged(Editable s) {}
+            public void afterTextChanged(Editable s) {
+            }
         });
-        
+
         smartQAButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 fillAndSend(getFeatureCardText(0));
             }
         });
-        
+
         smartTranslateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 fillAndSend(getFeatureCardText(1));
             }
         });
-        
+
         semanticButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 fillAndSend(getFeatureCardText(2));
             }
         });
-        
+
         fourthButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 fillAndSend(getFeatureCardText(3));
             }
         });
-        
+
         modelSelectorText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 showModelSelector();
             }
         });
-        
+
         chatIconButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 toggleChatGreeting();
             }
         });
-        
+
         menuButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -807,28 +834,43 @@ public class ChatFragment extends Fragment {
                 }
             }
         });
-        
+
         thinkingToggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                
+
                 if (deepThinkingSwitch != null) {
                     deepThinkingSwitch.setChecked(isChecked);
-                }}
+                }
+            }
         });
-        
+
+        upLoadImg.setOnClickListener(view -> XXPermissions.with(this)
+                // 申请多个权限
+                .permission(PermissionLists.getReadMediaImagesPermission())
+                // 设置不触发错误检测机制（局部设置）
+                //.unchecked()
+                .request((grantedList, deniedList) -> {
+                    boolean allGranted = deniedList.isEmpty();
+                    if (allGranted) {
+                        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                        startActivityForResult(intent, REQUEST_ALBUM);
+                    }
+                }));
+
         internetToggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {}
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+            }
         });
-        
+
         languageSwitchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 switchLanguage();
             }
         });
-        
+
         // 顶部自动播报切换按钮
         if (audioButton != null) {
             audioButton.setOnClickListener(new View.OnClickListener() {
@@ -837,17 +879,17 @@ public class ChatFragment extends Fragment {
                     // 需求6: 开放中文模式下的实时语音合成
                     // 检查是否为藏文或中文模式
                     String language = LanguageManager.getInstance(getContext()).getLanguage();
-                    if (!LanguageManager.LANGUAGE_TIBETAN.equals(language) && 
-                        !LanguageManager.LANGUAGE_CHINESE.equals(language)) {
+                    if (!LanguageManager.LANGUAGE_TIBETAN.equals(language) &&
+                            !LanguageManager.LANGUAGE_CHINESE.equals(language)) {
                         // 非藏文/中文模式,不响应点击
                         safeShowToast("语音合成仅支持藏文和中文");
                         return;
                     }
-                    
+
                     // 切换自动播报状态
                     isAutoPlayEnabled = !isAutoPlayEnabled;
                     updateAutoPlayButtonIcon();
-                    
+
                     if (isAutoPlayEnabled) {
                         // 开启实时TTS会话
                         realtimeTtsManager.startSession();
@@ -862,20 +904,20 @@ public class ChatFragment extends Fragment {
                 }
             });
         }
-        
+
         setupDrawerMenuListeners();
     }
-    
+
     private void setupDrawerMenuListeners() {
         if (drawerLayout == null) return;
-        
+
         View menuChatHistory = drawerLayout.findViewById(R.id.menuChatHistory);
         if (menuChatHistory != null) {
             menuChatHistory.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     drawerLayout.closeDrawer(android.view.Gravity.START);
-                    
+
                     HistoryFragment historyFragment = new HistoryFragment();
                     getActivity().getSupportFragmentManager().beginTransaction()
                             .replace(R.id.fragmentContainer, historyFragment)
@@ -884,32 +926,32 @@ public class ChatFragment extends Fragment {
                 }
             });
         }
-        
+
         View menuSettings = drawerLayout.findViewById(R.id.menuSettings);
         if (menuSettings != null) {
             menuSettings.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     drawerLayout.closeDrawer(android.view.Gravity.START);
-                    
+
                     Intent intent = new Intent(getActivity(), SettingsActivity.class);
                     startActivity(intent);
                 }
             });
         }
-        
+
         View menuLanguage = drawerLayout.findViewById(R.id.menuLanguage);
         if (menuLanguage != null) {
             menuLanguage.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     drawerLayout.closeDrawer(android.view.Gravity.START);
-                    
+
                     showLanguageDialog();
                 }
             });
         }
-        
+
         View menuUpgrade = drawerLayout.findViewById(R.id.menuUpgrade);
         if (menuUpgrade != null) {
             menuUpgrade.setOnClickListener(new View.OnClickListener() {
@@ -920,7 +962,7 @@ public class ChatFragment extends Fragment {
                 }
             });
         }
-        
+
         View menuLearnMore = drawerLayout.findViewById(R.id.menuLearnMore);
         if (menuLearnMore != null) {
             menuLearnMore.setOnClickListener(new View.OnClickListener() {
@@ -931,7 +973,7 @@ public class ChatFragment extends Fragment {
                 }
             });
         }
-        
+
         View menuHelp = drawerLayout.findViewById(R.id.menuHelp);
         if (menuHelp != null) {
             menuHelp.setOnClickListener(new View.OnClickListener() {
@@ -942,24 +984,24 @@ public class ChatFragment extends Fragment {
                 }
             });
         }
-        
+
         View userProfileSection = drawerLayout.findViewById(R.id.userProfileSection);
         if (userProfileSection != null) {
             userProfileSection.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    com.example.myapplication.utils.TokenManager tokenManager = 
-                        new com.example.myapplication.utils.TokenManager(getContext());
-                    
+                    com.example.myapplication.utils.TokenManager tokenManager =
+                            new com.example.myapplication.utils.TokenManager(getContext());
+
                     if (!tokenManager.isLoggedIn()) {
-                        
+
                         showLoginDialog();
                     }
-                    
+
                 }
             });
         }
-        
+
         View menuLogout = drawerLayout.findViewById(R.id.menuLogout);
         if (menuLogout != null) {
             menuLogout.setOnClickListener(new View.OnClickListener() {
@@ -970,76 +1012,76 @@ public class ChatFragment extends Fragment {
                 }
             });
         }
-        
+
         updateUserProfile();
     }
-    
+
     private void showLoginDialog() {
         Intent intent = new Intent(getActivity(), LoginV2Activity.class);
         startActivity(intent);
     }
-    
+
     @Override
     public void onResume() {
         super.onResume();
-        
+
         updateUserProfile();
     }
-    
+
     private void showLogoutDialog() {
         new android.app.AlertDialog.Builder(getContext())
-            .setTitle(getString(R.string.logout))
-            .setMessage("确定要退出登录吗？")
-            .setPositiveButton("确定", new android.content.DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
+                .setTitle(getString(R.string.logout))
+                .setMessage("确定要退出登录吗？")
+                .setPositiveButton("确定", new android.content.DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
 
-                    com.example.myapplication.utils.TokenManager tokenManager =
-                        new com.example.myapplication.utils.TokenManager(getContext());
-                    tokenManager.clearUserInfo();
+                        com.example.myapplication.utils.TokenManager tokenManager =
+                                new com.example.myapplication.utils.TokenManager(getContext());
+                        tokenManager.clearUserInfo();
 
-                    safeShowToast("已退出登录");
+                        safeShowToast("已退出登录");
 
-                    // 跳转到登录页
-                    Intent intent = new Intent(getActivity(), LoginV2Activity.class);
-                    startActivity(intent);
-                    getActivity().finish();
-                }
-            })
-            .setNegativeButton("取消", null)
-            .show();
+                        // 跳转到登录页
+                        Intent intent = new Intent(getActivity(), LoginV2Activity.class);
+                        startActivity(intent);
+                        getActivity().finish();
+                    }
+                })
+                .setNegativeButton("取消", null)
+                .show();
     }
-    
+
     private void updateUserProfile() {
         if (drawerLayout == null) return;
-        
+
         TextView userAvatar = drawerLayout.findViewById(R.id.userAvatar);
         TextView userNameOrLogin = drawerLayout.findViewById(R.id.userNameOrLogin);
         View menuLogout = drawerLayout.findViewById(R.id.menuLogout);
-        
+
         if (userAvatar == null || userNameOrLogin == null) return;
-        
-        com.example.myapplication.utils.TokenManager tokenManager = 
-            new com.example.myapplication.utils.TokenManager(getContext());
-        
+
+        com.example.myapplication.utils.TokenManager tokenManager =
+                new com.example.myapplication.utils.TokenManager(getContext());
+
         if (tokenManager.isLoggedIn()) {
-            
+
             String userName = tokenManager.getUserName();
             if (userName != null && !userName.isEmpty()) {
                 userNameOrLogin.setText(userName);
-                
+
                 String firstLetter = userName.substring(0, 1).toUpperCase();
                 userAvatar.setText(firstLetter);
             } else {
                 userNameOrLogin.setText(tokenManager.getUserAccount());
                 userAvatar.setText("U");
             }
-            
+
             if (menuLogout != null) {
-                menuLogout.setVisibility(View.VISIBLE);
+                menuLogout.setVisibility(View.GONE);
             }
         } else {
-            
+
             String language = LanguageManager.getInstance(getContext()).getLanguage();
             String loginText;
             switch (language) {
@@ -1056,13 +1098,13 @@ public class ChatFragment extends Fragment {
             }
             userNameOrLogin.setText(loginText);
             userAvatar.setText("👤");
-            
+
             if (menuLogout != null) {
                 menuLogout.setVisibility(View.GONE);
             }
         }
     }
-    
+
     private void toggleChatGreeting() {
         // 停止TTS播放
         if (ttsManager != null && ttsManager.isPlaying()) {
@@ -1075,51 +1117,51 @@ public class ChatFragment extends Fragment {
                 updateAutoPlayButtonIcon();
             }
         }
-        
+
         // 停止实时TTS
         if (realtimeTtsManager != null && realtimeTtsManager.isActive()) {
             realtimeTtsManager.stop();
         }
-        
+
         // 获取当前语言
         String language = LanguageManager.getInstance(getContext()).getLanguage();
-        
+
         if (chatScrollView != null && chatScrollView.getVisibility() == View.VISIBLE) {
             if (isGenerating) {
                 stopGeneration();
             }
-            
+
             // 清空对话历史
             clearConversationHistory();
-            
+
             // 清空聊天消息UI容器
             if (chatMessagesContainer != null) {
                 chatMessagesContainer.removeAllViews();
             }
-            
+
             chatScrollView.setVisibility(View.GONE);
             chatInputContainer.setVisibility(View.VISIBLE);
             backButton.setVisibility(View.GONE);
-            
+
             // 问题1修复：重置isFirstMessage，确保下次提问时能正确切换到聊天视图
             isFirstMessage = true;
-            
+
             if (modelSelectorText != null) {
                 modelSelectorText.setGravity(android.view.Gravity.CENTER);
                 LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) modelSelectorText.getLayoutParams();
-                params.setMarginStart((int) (8 * getResources().getDisplayMetrics().density)); 
-                params.setMarginEnd(0); 
+                params.setMarginStart((int) (8 * getResources().getDisplayMetrics().density));
+                params.setMarginEnd(0);
                 modelSelectorText.setLayoutParams(params);
-                
+
                 int padding = (int) (8 * getResources().getDisplayMetrics().density);
                 modelSelectorText.setPadding(padding, padding, padding, padding);
             }
-            
+
             // 英文模式：显示问候页（Hello! I am SunshineGLM...）
             if (LanguageManager.LANGUAGE_ENGLISH.equals(language)) {
                 chatGreetingLayout.setVisibility(View.VISIBLE);  // 显示问候页
                 centerLayout.setVisibility(View.GONE);  // 隐藏主页
-                
+
                 View greetingText = getView().findViewById(R.id.greetingText);
                 if (greetingText != null && greetingText instanceof TextView) {
                     ((TextView) greetingText).setText("");
@@ -1129,31 +1171,31 @@ public class ChatFragment extends Fragment {
                 // 藏文和中文：显示主页
                 chatGreetingLayout.setVisibility(View.VISIBLE);
                 centerLayout.setVisibility(View.GONE);
-                
+
                 View greetingText = getView().findViewById(R.id.greetingText);
                 if (greetingText != null && greetingText instanceof TextView) {
                     ((TextView) greetingText).setText("");
                     greetingText.setVisibility(View.GONE);
                 }
             }
-            
+
             if (languageSwitchButton != null) {
                 languageSwitchButton.setVisibility(View.VISIBLE);
             }
-            
+
             return;
         }
-        
+
         // 英文模式：聊天按钮不做任何操作（保持问候页）
         if (LanguageManager.LANGUAGE_ENGLISH.equals(language)) {
             return;
         }
-        
+
         // 藏文和中文模式：在主页和问候页之间切换
         if (chatGreetingLayout.getVisibility() == View.VISIBLE) {
             chatGreetingLayout.setVisibility(View.GONE);
             centerLayout.setVisibility(View.VISIBLE);
-            
+
             View greetingText = getView().findViewById(R.id.greetingText);
             if (greetingText != null && greetingText instanceof TextView) {
                 String greetingTextContent;
@@ -1172,49 +1214,55 @@ public class ChatFragment extends Fragment {
         } else {
             chatGreetingLayout.setVisibility(View.VISIBLE);
             centerLayout.setVisibility(View.GONE);
-            
+
             View greetingText = getView().findViewById(R.id.greetingText);
             if (greetingText != null && greetingText instanceof TextView) {
                 ((TextView) greetingText).setText("");
-                greetingText.setVisibility(View.GONE);}
+                greetingText.setVisibility(View.GONE);
+            }
         }
     }
-    
-    private void testApiConnection() {JSONObject requestJson = new JSONObject();
+
+    private void testApiConnection() {
+        JSONObject requestJson = new JSONObject();
         try {
             JSONArray messages = new JSONArray();
             JSONObject userMessage = new JSONObject();
             userMessage.put("role", "user");
             userMessage.put("content", "你好");
             messages.put(userMessage);
-            
+
             requestJson.put("model", "glm-4.6");
             requestJson.put("messages", messages);
-            requestJson.put("do_sample", true);  
+            requestJson.put("do_sample", true);
             requestJson.put("max_tokens", 1000);
-            requestJson.put("temperature", 0.6);  
-            requestJson.put("top_p", 0.95);  
-            requestJson.put("stream", false);  
-            requestJson.put("enable_thinking", false);} catch (JSONException e) {
-            e.printStackTrace();safeShowToast("ཞུ་བ་བཟོ་བ་ཕམ་པ།");
-            
+            requestJson.put("temperature", 0.6);
+            requestJson.put("top_p", 0.95);
+            requestJson.put("stream", false);
+            requestJson.put("enable_thinking", false);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            safeShowToast("ཞུ་བ་བཟོ་བ་ཕམ་པ།");
+
             return;
         }
-        
+
         RequestBody body = RequestBody.create(requestJson.toString(), JSON);
         Request request = new Request.Builder()
                 .url(SERVER_URL)
                 .post(body)
                 .addHeader("Content-Type", "application/json")
-                .build();client.newCall(request).enqueue(new Callback() {
+                .build();
+        client.newCall(request).enqueue(new Callback() {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 if (response != null && response.isSuccessful()) {
                     final int code = response.code();
-                    final String responseBody = response.body().string();getActivity().runOnUiThread(new Runnable() {
+                    final String responseBody = response.body().string();
+                    getActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            
+
                             if (code == 200) {
                                 try {
                                     JSONObject jsonResponse = new JSONObject(responseBody);
@@ -1222,23 +1270,27 @@ public class ChatFragment extends Fragment {
                                     if (choices.length() > 0) {
                                         JSONObject firstChoice = choices.getJSONObject(0);
                                         JSONObject message = firstChoice.getJSONObject("message");
-                                        String content = message.getString("content");safeShowToast("✓ API འབྲེལ་མཐུད་ལེགས་གྲུབ།\nལན་འདེབས། " + content);
+                                        String content = message.getString("content");
+                                        safeShowToast("✓ API འབྲེལ་མཐུད་ལེགས་གྲུབ།\nལན་འདེབས། " + content);
                                     }
-                                } catch (JSONException e) {safeShowToast("✗ ལན་འདེབས་རྣམ་གཞག་ནོར་འཁྲུལ།");
+                                } catch (JSONException e) {
+                                    safeShowToast("✗ ལན་འདེབས་རྣམ་གཞག་ནོར་འཁྲུལ།");
                                 }
-                            } else {safeShowToast("✗ ཞབས་ཞུ་འཕྲུལ་ཆས་ནོར་འཁྲུལ།");
+                            } else {
+                                safeShowToast("✗ ཞབས་ཞུ་འཕྲུལ་ཆས་ནོར་འཁྲུལ།");
                             }
                         }
                     });
                 }
             }
-            
+
             @Override
-            public void onFailure(Call call, IOException e) {if (getActivity() != null) {
+            public void onFailure(Call call, IOException e) {
+                if (getActivity() != null) {
                     getActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            
+
                             String errorMsg = "✗ འབྲེལ་མཐུད་ཕམ་པ།\n\n";
                             errorMsg += "རྒྱུ་མཚན་སྲིད་པ།\n";
                             errorMsg += "1. ཞབས་ཞུ་འཕྲུལ་ཆས་འཁོར་མི་འདུག\n";
@@ -1246,7 +1298,7 @@ public class ChatFragment extends Fragment {
                             errorMsg += "3. མེ་འགོག་ཐོག་བཀག་པ།\n";
                             errorMsg += "4. IP ཡང་ན་སྒོ་གྲངས་ནོར་བ།\n\n";
                             errorMsg += "ཞབས་ཞུ་འཕྲུལ་ཆས་དང་འབྲེལ་མཐུད་ཕམ་པ།";
-                            
+
                             safeShowToast(errorMsg);
                         }
                     });
@@ -1254,17 +1306,17 @@ public class ChatFragment extends Fragment {
             }
         });
     }
-    
+
     private void fillAndSend(String text) {
-        
+
         chatInputEditText.setText(text);
         sendChatMessage();
     }
-    
+
     private void updateSendButtonAppearance() {
-    
+
     }
-    
+
     private void updateChatSendButtonAppearance() {
         if (isGenerating) {
             chatSendButton.setBackgroundResource(R.drawable.stop_button_background);
@@ -1277,64 +1329,64 @@ public class ChatFragment extends Fragment {
             chatSendButton.setImageResource(R.drawable.ic_arrow_up);
         }
     }
-    
+
     private void sendMessage() {
-        
+
         sendChatMessage();
     }
-    
+
     private void sendMessageOld() {
-        
+
         if (isGenerating) {
             stopGeneration();
             return;
         }
-        
+
         String message = chatInputEditText.getText().toString().trim();
-        
+
         if (message.isEmpty()) {
             safeShowToast("请输入问题");
             return;
         }
-        
+
         if (isFirstMessage) {
             switchToChatView();
             isFirstMessage = false;
         }
-        
+
         currentQuestion = message;
         currentAnswer = "";
         currentThinkingContent = "";
-        
+
         addUserMessage(message);
-        
+
         chatInputEditText.setText("");
-        
+
         sendQuestionToServer(message);
     }
-    
+
     private void sendChatMessage() {
         if (isGenerating) {
             stopGeneration();
             return;
         }
-        
+
         String message = chatInputEditText.getText().toString().trim();
-        if (message.isEmpty()) {
+        if (message.isEmpty() && imageBase64 == null) {
             safeShowToast("请输入问题");
             return;
         }
-        
+
         // 如果有待删除的索引，先删除该消息及之后的所有消息
         if (pendingDeleteIndex >= 0) {
             Log.d("ChatFragment", "发送前删除索引 " + pendingDeleteIndex + " 及之后的消息");
-            
+
             // 删除UI中的消息
             int childCount = chatMessagesContainer.getChildCount();
             for (int i = childCount - 1; i >= pendingDeleteIndex; i--) {
                 chatMessagesContainer.removeViewAt(i);
             }
-            
+
             // 重建对话历史（只保留该消息之前的）
             // 每个用户消息对应一个AI回答，所以索引/2就是对话轮数
             int conversationIndex = pendingDeleteIndex / 2;
@@ -1346,25 +1398,25 @@ public class ChatFragment extends Fragment {
                 }
                 conversationHistory = newHistory;
             }
-            
+
             // 清除待删除标记
             pendingDeleteIndex = -1;
         }
-        
+
         if (isFirstMessage) {
             switchToChatView();
             isFirstMessage = false;
         }
-        
+
         currentQuestion = message;
         currentAnswer = "";
         currentThinkingContent = "";
-        
+
         // 需求6: 实时TTS支持藏文和中文模式
         // 如果开启自动播报且为藏文或中文模式,启动新会话
         String currentLanguage = LanguageManager.getInstance(getContext()).getLanguage();
-        if (isAutoPlayEnabled && (LanguageManager.LANGUAGE_TIBETAN.equals(currentLanguage) || 
-                                   LanguageManager.LANGUAGE_CHINESE.equals(currentLanguage))) {
+        if (isAutoPlayEnabled && (LanguageManager.LANGUAGE_TIBETAN.equals(currentLanguage) ||
+                LanguageManager.LANGUAGE_CHINESE.equals(currentLanguage))) {
             // 停止之前的会话(如果有)
             if (realtimeTtsManager.isActive()) {
                 realtimeTtsManager.stop();
@@ -1372,74 +1424,83 @@ public class ChatFragment extends Fragment {
             // 启动新会话
             realtimeTtsManager.startSession();
         }
-        
-        addUserMessage(message);
-        
+
+        addUserMessage(imageBase64 == null ? message : "[图片]" + message);
+
         chatInputEditText.setText("");
-        
+
         sendQuestionToServer(message);
     }
-    
-    private void switchToChatView() {if (centerLayout != null) {
-            centerLayout.setVisibility(View.GONE);}
+
+    private void switchToChatView() {
+        if (centerLayout != null) {
+            centerLayout.setVisibility(View.GONE);
+        }
         if (titleLayout != null) {
-            titleLayout.setVisibility(View.GONE);}
-        
+            titleLayout.setVisibility(View.GONE);
+        }
+
         if (getView() != null) {
             View greetingText = getView().findViewById(R.id.greetingText);
             if (greetingText != null) {
-                greetingText.setVisibility(View.GONE);} else {}
-        } else {}
-        
+                greetingText.setVisibility(View.GONE);
+            } else {
+            }
+        } else {
+        }
+
         if (chatGreetingLayout != null) {
-            chatGreetingLayout.setVisibility(View.GONE);}
-        
+            chatGreetingLayout.setVisibility(View.GONE);
+        }
+
         if (modelSelectorText != null) {
-            
+
             modelSelectorText.setGravity(android.view.Gravity.CENTER);
             LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) modelSelectorText.getLayoutParams();
-            params.setMarginStart((int) (8 * getResources().getDisplayMetrics().density)); 
-            params.setMarginEnd((int) (8 * getResources().getDisplayMetrics().density)); 
+            params.setMarginStart((int) (8 * getResources().getDisplayMetrics().density));
+            params.setMarginEnd((int) (8 * getResources().getDisplayMetrics().density));
             modelSelectorText.setLayoutParams(params);
-            
+
             int paddingHorizontal = (int) (8 * getResources().getDisplayMetrics().density);
             int paddingVertical = (int) (12 * getResources().getDisplayMetrics().density);
             modelSelectorText.setPadding(paddingHorizontal, paddingVertical, paddingHorizontal, paddingVertical);
         }
-        
+
         chatScrollView.setVisibility(View.VISIBLE);
         chatInputContainer.setVisibility(View.VISIBLE);
         // 需求1: 删除聊天模式下顶部返回按钮
         backButton.setVisibility(View.GONE);
         if (languageSwitchButton != null) {
-            languageSwitchButton.setVisibility(View.GONE);}}
-    
+            languageSwitchButton.setVisibility(View.GONE);
+        }
+    }
+
     private void returnToSearchView() {
-        
+
         chatMessagesContainer.removeAllViews();
-        
+
         clearConversationHistory();
-        
+
         chatScrollView.setVisibility(View.GONE);
-        
+
         chatInputContainer.setVisibility(View.VISIBLE);
         backButton.setVisibility(View.GONE);
-        
+
         if (modelSelectorText != null) {
-            
+
             modelSelectorText.setGravity(android.view.Gravity.CENTER);
             LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) modelSelectorText.getLayoutParams();
-            params.setMarginStart((int) (8 * getResources().getDisplayMetrics().density)); 
-            params.setMarginEnd(0); 
+            params.setMarginStart((int) (8 * getResources().getDisplayMetrics().density));
+            params.setMarginEnd(0);
             modelSelectorText.setLayoutParams(params);
-            
+
             int padding = (int) (8 * getResources().getDisplayMetrics().density);
             modelSelectorText.setPadding(padding, padding, padding, padding);
         }
-        
+
         // 获取当前语言
         String language = LanguageManager.getInstance(getContext()).getLanguage();
-        
+
         // 英文模式：直接显示问候页（不显示主页）
         if (LanguageManager.LANGUAGE_ENGLISH.equals(language)) {
             if (centerLayout != null) {
@@ -1448,13 +1509,13 @@ public class ChatFragment extends Fragment {
             if (titleLayout != null) {
                 titleLayout.setVisibility(View.GONE);
             }
-            
+
             View greetingText = getView().findViewById(R.id.greetingText);
             if (greetingText != null && greetingText instanceof TextView) {
                 ((TextView) greetingText).setText("Hi, where to start today?");
                 greetingText.setVisibility(View.VISIBLE);
             }
-            
+
             if (chatGreetingLayout != null) {
                 chatGreetingLayout.setVisibility(View.GONE);
             }
@@ -1466,7 +1527,7 @@ public class ChatFragment extends Fragment {
             if (titleLayout != null) {
                 titleLayout.setVisibility(View.VISIBLE);
             }
-            
+
             View greetingText = getView().findViewById(R.id.greetingText);
             if (greetingText != null && greetingText instanceof TextView) {
                 String greetingTextContent;
@@ -1482,55 +1543,55 @@ public class ChatFragment extends Fragment {
                 ((TextView) greetingText).setText(greetingTextContent);
                 greetingText.setVisibility(View.VISIBLE);
             }
-            
+
             if (chatGreetingLayout != null) {
                 chatGreetingLayout.setVisibility(View.GONE);
             }
         }
-        
+
         if (chatIconButton != null) {
             chatIconButton.setVisibility(View.VISIBLE);
         }
-        
+
         if (languageSwitchButton != null) {
             languageSwitchButton.setVisibility(View.VISIBLE);
         }
-        
+
         isFirstMessage = true;
     }
-    
+
     private void initHistoryManager() {
         historyManager = ChatHistoryManager.getInstance(getContext());
         conversationHistory = new ArrayList<>();
     }
-    
+
     private void addUserMessage(String message) {
-        
+
         LinearLayout messageContainer = new LinearLayout(getContext());
         messageContainer.setOrientation(LinearLayout.HORIZONTAL);
         messageContainer.setGravity(android.view.Gravity.END);
-        
+
         LinearLayout.LayoutParams containerParams = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
         );
         containerParams.setMargins(0, 0, 0, 16);
         messageContainer.setLayoutParams(containerParams);
-        
+
         // 创建垂直布局容器，包含消息和操作按钮
         LinearLayout verticalContainer = new LinearLayout(getContext());
         verticalContainer.setOrientation(LinearLayout.VERTICAL);
         verticalContainer.setGravity(android.view.Gravity.END);
-        
+
         TextView messageView = new TextView(getContext());
         messageView.setText(message);
         messageView.setTextSize(16);
         messageView.setTextColor(getThemeColor(android.R.attr.textColorPrimary));
         messageView.setPadding(32, 32, 32, 32);
         messageView.setBackgroundColor(getUserMessageBackgroundColor());
-        
+
         TibetanFontHelper.applyTibetanFont(getContext(), messageView);
-        
+
         LinearLayout.LayoutParams messageParams = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
@@ -1538,7 +1599,7 @@ public class ChatFragment extends Fragment {
         messageParams.setMargins(0, 0, 0, 8);  // 底部留出空间给按钮
         messageView.setLayoutParams(messageParams);
         messageView.setMaxWidth((int) (getResources().getDisplayMetrics().widthPixels - 80 * getResources().getDisplayMetrics().density));
-        
+
         // 添加用户消息操作按钮
         LinearLayout userButtonContainer = new LinearLayout(getContext());
         userButtonContainer.setOrientation(LinearLayout.HORIZONTAL);
@@ -1549,11 +1610,11 @@ public class ChatFragment extends Fragment {
         );
         buttonContainerParams.setMargins(0, 8, 0, 0);
         userButtonContainer.setLayoutParams(buttonContainerParams);
-        
+
         int buttonSize = (int) (40 * getResources().getDisplayMetrics().density);  // 统一按钮尺寸为40dp
         int iconSize = (int) (24 * getResources().getDisplayMetrics().density);    // 图标尺寸
         int buttonMargin = (int) (8 * getResources().getDisplayMetrics().density);
-        
+
         // 修改按钮 - 样式与回答下方按钮一致
         ImageButton editButton = new ImageButton(getContext());
         editButton.setImageResource(R.drawable.ic_edit);
@@ -1571,7 +1632,7 @@ public class ChatFragment extends Fragment {
                 resendFromMessage(messageIndex, message);
             }
         });
-        
+
         // 复制按钮 - 样式与回答下方按钮一致
         ImageButton copyButton = new ImageButton(getContext());
         copyButton.setImageResource(R.drawable.ic_copy);
@@ -1589,60 +1650,60 @@ public class ChatFragment extends Fragment {
                 safeShowToast("已复制到剪贴板");
             }
         });
-        
+
         userButtonContainer.addView(editButton);
         userButtonContainer.addView(copyButton);
-        
+
         verticalContainer.addView(messageView);
         verticalContainer.addView(userButtonContainer);
-        
+
         TextView avatarView = new TextView(getContext());
         avatarView.setText("U");
         avatarView.setTextSize(18);
-        avatarView.setTextColor(0xFFFFFFFF); 
+        avatarView.setTextColor(0xFFFFFFFF);
         avatarView.setGravity(android.view.Gravity.CENTER);
         avatarView.setBackgroundResource(R.drawable.user_avatar_background);
-        
+
         LinearLayout.LayoutParams avatarParams = new LinearLayout.LayoutParams(
                 (int) (40 * getResources().getDisplayMetrics().density),
                 (int) (40 * getResources().getDisplayMetrics().density)
         );
         avatarParams.setMargins(8, 0, 0, 0);
         avatarView.setLayoutParams(avatarParams);
-        
+
         messageContainer.addView(verticalContainer);
         messageContainer.addView(avatarView);
-        
+
         chatMessagesContainer.addView(messageContainer);
         scrollToBottom();
     }
-    
+
     private void addBotMessage(String message) {
-        
+
         TextView messageView = new TextView(getContext());
-        
+
         markwon.setMarkdown(messageView, message);
         messageView.setTextSize(16);
         messageView.setTextColor(getThemeColor(android.R.attr.textColorPrimary));
         messageView.setPadding(48, 48, 48, 48);
         messageView.setBackgroundColor(getAnswerBackgroundColor());
-        
+
         TibetanFontHelper.applyTibetanFont(getContext(), messageView);
-        
+
         LinearLayout.LayoutParams messageParams = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
         );
         messageParams.setMargins(0, 0, 0, 16);
         messageView.setLayoutParams(messageParams);
-        
+
         chatMessagesContainer.addView(messageView);
-        
+
         addActionButtonsForMessage(messageView, message);
-        
+
         scrollToBottom();
     }
-    
+
     private void scrollToBottom() {
         // 问题1修复：只有在用户没有手动滚动时才自动滚动到底部
         if (!userIsScrolling) {
@@ -1654,42 +1715,49 @@ public class ChatFragment extends Fragment {
             });
         }
     }
-    
+
     private void sendQuestionToServer(String question) {
-        setLoadingState(true);JSONObject requestJson = new JSONObject();
+        imageBase64 = null;
+        setLoadingState(true);
+        JSONObject requestJson = new JSONObject();
         try {
-            
+
             JSONArray messages = new JSONArray();
-            
+
             // 第一条消息必须是 system prompt
             JSONObject systemMessage = new JSONObject();
             systemMessage.put("role", "system");
             systemMessage.put("content", SYSTEM_PROMPT);
             messages.put(systemMessage);
-            
+
             // 然后添加对话历史
             for (JSONObject historyMessage : conversationHistory) {
                 messages.put(historyMessage);
             }
-            
+
             // 最后添加当前用户消息
             JSONObject userMessage = new JSONObject();
             userMessage.put("role", "user");
             userMessage.put("content", question);
             messages.put(userMessage);
-            
+
             conversationHistory.add(userMessage);
-            
+
             requestJson.put("model", "glm-4.6");
             requestJson.put("messages", messages);
-            requestJson.put("do_sample", true);  
-            requestJson.put("max_tokens", 65536);  
-            requestJson.put("temperature", 0.6);  
-            requestJson.put("top_p", 0.95);  
-            requestJson.put("stream", true);  
-            
-            requestJson.put("enable_thinking", true);android.util.Log.d("ChatFragment", "Content-Type: application/json; charset=utf-8");String jsonStr = requestJson.toString();} catch (JSONException e) {
-            e.printStackTrace();setLoadingState(false);
+            requestJson.put("do_sample", true);
+            requestJson.put("max_tokens", 65536);
+            requestJson.put("temperature", 0.6);
+            requestJson.put("top_p", 0.95);
+            requestJson.put("stream", true);
+            requestJson.put("image", imageBase64);
+
+            requestJson.put("enable_thinking", true);
+            android.util.Log.d("ChatFragment", "Content-Type: application/json; charset=utf-8");
+            String jsonStr = requestJson.toString();
+        } catch (JSONException e) {
+            e.printStackTrace();
+            setLoadingState(false);
             if (getActivity() != null) {
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
@@ -1700,75 +1768,76 @@ public class ChatFragment extends Fragment {
             }
             return;
         }
-        
+
         String jsonString = requestJson.toString();
         byte[] jsonBytes = jsonString.getBytes(java.nio.charset.StandardCharsets.UTF_8);
         RequestBody body = RequestBody.create(jsonBytes, JSON);
-        
-        Request request = new Request.Builder()
-                .url(SERVER_URL)
-                .post(body)
-                .addHeader("Content-Type", "application/json; charset=utf-8")
-                .addHeader("Accept", "text/event-stream")  
-                .build();client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                final int code = response.code();if (code != 200) {
-                    final String errorBody = response.body().string();if (getActivity() != null) {
+
+
+        EasyHttp.post(this)
+                .api(new SendMessageApi())
+                .body(body)
+                .request(new HttpCallbackProxy<Response>(this) {
+
+                    @Override
+                    public void onHttpSuccess(Response response) {
+                        final int code = response.code();
+                        if (code != 200) {
+                            if (getActivity() != null) {
+                                getActivity().runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        setLoadingState(false);
+
+                                        String errorMsg = "❌ ཞབས་ཞུ་འཕྲུལ་ཆས་ནོར་འཁྲུལ།\n\n";
+                                        errorMsg += "ཞབས་ཞུ་འཕྲུལ་ཆས་ལ་དཀའ་ངལ་ཞིག་བྱུང་འདུག་པས་ཡང་བསྐྱར་ཚོད་ལྟ་བྱེད་རོགས།";
+                                        addBotMessage(errorMsg);
+                                    }
+                                });
+                            }
+                            return;
+                        }
+
+                        if (getActivity() != null) {
+                            getActivity().runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    handleStreamingResponse(response);
+                                }
+                            });
+                        }
+                    }
+
+                    @Override
+                    public void onHttpFail(@NonNull Throwable throwable) {
+                        super.onHttpFail(throwable);
                         getActivity().runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
                                 setLoadingState(false);
-                                
-                                String errorMsg = "❌ ཞབས་ཞུ་འཕྲུལ་ཆས་ནོར་འཁྲུལ།\n\n";
-                                errorMsg += "ཞབས་ཞུ་འཕྲུལ་ཆས་ལ་དཀའ་ངལ་ཞིག་བྱུང་འདུག་པས་ཡང་བསྐྱར་ཚོད་ལྟ་བྱེད་རོགས།";
+
+                                String errorMsg = "❌ དྲ་བའི་ཞུ་བ་ཕམ་པ།\n\n";
+                                errorMsg += "རྒྱུ་མཚན་སྲིད་པ།\n";
+                                errorMsg += "• དྲ་བའི་འབྲེལ་མཐུད་ཆད་པ།\n";
+                                errorMsg += "• ཞབས་ཞུ་འཕྲུལ་ཆས་ལན་མ་སྤྲད་པ།\n";
+                                errorMsg += "• ཞུ་བའི་དུས་ཚོད་ཡོལ་བ།\n\n";
+                                errorMsg += "དྲ་བའི་འབྲེལ་མཐུད་ཞིབ་བཤེར་བྱས་རྗེས་ཡང་བསྐྱར་ཚོད་ལྟ་བྱེད་རོགས།";
                                 addBotMessage(errorMsg);
                             }
                         });
                     }
-                    return;
-                }
-                
-                if (getActivity() != null) {
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            handleStreamingResponse(response);
-                        }
-                    });
-                }
-            }
-            
-            @Override
-            public void onFailure(Call call, IOException e) {if (getActivity() != null) {
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            setLoadingState(false);
-                            
-                            String errorMsg = "❌ དྲ་བའི་ཞུ་བ་ཕམ་པ།\n\n";
-                            errorMsg += "རྒྱུ་མཚན་སྲིད་པ།\n";
-                            errorMsg += "• དྲ་བའི་འབྲེལ་མཐུད་ཆད་པ།\n";
-                            errorMsg += "• ཞབས་ཞུ་འཕྲུལ་ཆས་ལན་མ་སྤྲད་པ།\n";
-                            errorMsg += "• ཞུ་བའི་དུས་ཚོད་ཡོལ་བ།\n\n";
-                            errorMsg += "དྲ་བའི་འབྲེལ་མཐུད་ཞིབ་བཤེར་བྱས་རྗེས་ཡང་བསྐྱར་ཚོད་ལྟ་བྱེད་རོགས།";
-                            addBotMessage(errorMsg);
-                        }
-                    });
-                }
-            }
-        });
+                });
     }
-    
-    private TextView currentStreamingTextView;  
-    private TextView currentThinkingTextView;   
-    private LinearLayout currentThinkingContainer; 
-    private boolean isThinkingPhase = false;    
-    private boolean thinkingCompleted = false;  
-    
+
+    private TextView currentStreamingTextView;
+    private TextView currentThinkingTextView;
+    private LinearLayout currentThinkingContainer;
+    private boolean isThinkingPhase = false;
+    private boolean thinkingCompleted = false;
+
     private void handleStreamingResponse(Response response) {
         isGenerating = true;
-        
+
         if (getActivity() != null) {
             getActivity().runOnUiThread(new Runnable() {
                 @Override
@@ -1776,34 +1845,72 @@ public class ChatFragment extends Fragment {
                     setLoadingState(false);
                     updateSendButtonAppearance();
                     updateChatSendButtonAppearance();
-                    
+
                     createStreamingTextView();
                 }
             });
         }
-        
+
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
                     okio.BufferedSource source = response.body().source();
                     StringBuilder fullContent = new StringBuilder();
-                    int chunkCount = 0;while (!source.exhausted() && isGenerating) {
+                    int chunkCount = 0;
+                    while (!source.exhausted() && isGenerating) {
                         String line;
                         try {
                             line = source.readUtf8Line();
-                        } catch (IOException e) {break;
+                        } catch (IOException e) {
+                            break;
                         }
-                        
-                        if (line == null) {break;
+
+                        if (line == null) {
+                            break;
                         }
-                        if (line.trim().isEmpty()) {continue;
+                        if (line.trim().isEmpty()) {
+                            continue;
                         }
-                        
-                        chunkCount++;if (line.startsWith("data: ")) {
+
+                        chunkCount++;
+
+                        try {
+                            // 把当前 line 转成 JSON
+                            JSONObject json = new JSONObject(line.trim());
+                            int code = json.optInt("code", -1);
+                            String message = json.optString("message", "");
+                            // TOKEN 过期！
+                            isGenerating = false; // 停止生成
+                            if (40100 == code) {
+                                if (getActivity() != null) {
+                                    // 登录信息失效，跳转到登录页
+                                    TokenManager tokenManager = new TokenManager(getActivity());
+                                    tokenManager.clearUserInfo();
+                                    /*删除token*/
+                                    EasyConfig.getInstance().removeHeader("Authorization");
+                                    Intent intent = new Intent(getActivity(), LoginV2Activity.class);
+                                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                    getActivity().startActivity(intent);
+                                }
+
+                            } else {
+                                Toaster.show(message);
+                            }
+                            // 关闭流并退出线程
+                            try {
+                                response.close();
+                            } catch (Exception e) {
+                            }
+                            return; // 直接结束线程
+                        } catch (Exception ignored) {
+                        }
+                        if (line.startsWith("data: ")) {
                             String jsonData = line.substring(6).trim();
-                            
-                            if (jsonData.equals("[DONE]")) {if (isThinkingPhase && !thinkingCompleted) {thinkingCompleted = true;
+
+                            if (jsonData.equals("[DONE]")) {
+                                if (isThinkingPhase && !thinkingCompleted) {
+                                    thinkingCompleted = true;
                                     if (getActivity() != null) {
                                         getActivity().runOnUiThread(new Runnable() {
                                             @Override
@@ -1815,17 +1922,18 @@ public class ChatFragment extends Fragment {
                                 }
                                 break;
                             }
-                            
+
                             try {
                                 JSONObject chunk = new JSONObject(jsonData);
-                                
+
                                 if (chunk.has("choices")) {
                                     JSONArray choices = chunk.getJSONArray("choices");
                                     if (choices.length() > 0) {
                                         JSONObject firstChoice = choices.getJSONObject(0);
-                                        
+
                                         if (firstChoice.has("delta")) {
-                                            JSONObject delta = firstChoice.getJSONObject("delta");final boolean isThinkingEnabled;
+                                            JSONObject delta = firstChoice.getJSONObject("delta");
+                                            final boolean isThinkingEnabled;
                                             if (thinkingToggle != null) {
                                                 isThinkingEnabled = thinkingToggle.isChecked();
                                             } else if (deepThinkingSwitch != null) {
@@ -1833,10 +1941,11 @@ public class ChatFragment extends Fragment {
                                             } else {
                                                 isThinkingEnabled = false;
                                             }
-                                            
+
                                             if (isThinkingEnabled && delta.has("reasoning_content")) {
-                                                final String reasoning = delta.getString("reasoning_content");if (!reasoning.isEmpty()) {
-                                                    
+                                                final String reasoning = delta.getString("reasoning_content");
+                                                if (!reasoning.isEmpty()) {
+
                                                     if (getActivity() != null) {
                                                         getActivity().runOnUiThread(new Runnable() {
                                                             @Override
@@ -1846,32 +1955,34 @@ public class ChatFragment extends Fragment {
                                                         });
                                                     }
                                                 }
-                                            } else if (!isThinkingEnabled && delta.has("reasoning_content")) {}
-                                            
+                                            } else if (!isThinkingEnabled && delta.has("reasoning_content")) {
+                                            }
+
                                             if (delta.has("content")) {
                                                 final String content = delta.getString("content");
-                                                
+
                                                 // 需求6: 实时TTS支持藏文和中文模式
                                                 // 如果开启自动播报且为藏文或中文模式,推送增量文本
                                                 String currentLanguage = LanguageManager.getInstance(getContext()).getLanguage();
-                                                if (isAutoPlayEnabled && (LanguageManager.LANGUAGE_TIBETAN.equals(currentLanguage) || 
-                                                                           LanguageManager.LANGUAGE_CHINESE.equals(currentLanguage))) {
+                                                if (isAutoPlayEnabled && (LanguageManager.LANGUAGE_TIBETAN.equals(currentLanguage) ||
+                                                        LanguageManager.LANGUAGE_CHINESE.equals(currentLanguage))) {
                                                     if (!content.isEmpty()) {
                                                         realtimeTtsManager.pushLLMDelta(content);
                                                     }
                                                 }
-                                                
-                                                if (isThinkingPhase && !thinkingCompleted && !content.isEmpty()) {thinkingCompleted = true;
-                                                    
+
+                                                if (isThinkingPhase && !thinkingCompleted && !content.isEmpty()) {
+                                                    thinkingCompleted = true;
+
                                                     if (getActivity() != null) {
                                                         getActivity().runOnUiThread(new Runnable() {
                                                             @Override
                                                             public void run() {
                                                                 if (isThinkingEnabled) {
-                                                                    
+
                                                                     createAnswerArea();
                                                                 } else {
-                                                                    
+
                                                                     if (currentStreamingTextView != null) {
                                                                         streamingTextBuffer.setLength(0);
                                                                         currentStreamingTextView.setText("");
@@ -1881,79 +1992,87 @@ public class ChatFragment extends Fragment {
                                                         });
                                                     }
                                                 }
-                                                
+
                                                 if (thinkingCompleted) {
                                                     fullContent.append(content);
-                                                    
+
                                                     if (getActivity() != null) {
                                                         getActivity().runOnUiThread(new Runnable() {
                                                             @Override
                                                             public void run() {
-                                                                
+
                                                                 if (currentStreamingTextView == null) {
                                                                     createAnswerArea();
                                                                 }
-                                                                
+
                                                                 appendToStreamingTextView(content);
                                                             }
                                                         });
                                                     }
-                                                } else {}
+                                                } else {
+                                                }
                                             }
                                         }
-                                        
+
                                         if (firstChoice.has("finish_reason") && !firstChoice.isNull("finish_reason")) {
-                                            String finishReason = firstChoice.getString("finish_reason");if (finishReason.equals("length")) {} else if (finishReason.equals("stop")) {}
+                                            String finishReason = firstChoice.getString("finish_reason");
+                                            if (finishReason.equals("length")) {
+                                            } else if (finishReason.equals("stop")) {
+                                            }
                                         }
-                                        
+
                                         if (chunk.has("usage")) {
-                                            JSONObject usage = chunk.getJSONObject("usage");}
+                                            JSONObject usage = chunk.getJSONObject("usage");
+                                        }
                                     }
                                 }
-                            } catch (JSONException e) {}
+                            } catch (JSONException e) {
+                            }
                         }
-                    }if (getActivity() != null) {
+                    }
+                    if (getActivity() != null) {
                         getActivity().runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                
+
                                 flushPendingUIUpdates();
-                                
+
                                 // 需求6: 实时TTS支持藏文和中文模式
                                 // LLM生成完成,通知TTS结束
                                 String currentLanguage = LanguageManager.getInstance(getContext()).getLanguage();
-                                if (isAutoPlayEnabled && (LanguageManager.LANGUAGE_TIBETAN.equals(currentLanguage) || 
-                                                           LanguageManager.LANGUAGE_CHINESE.equals(currentLanguage))) {
+                                if (isAutoPlayEnabled && (LanguageManager.LANGUAGE_TIBETAN.equals(currentLanguage) ||
+                                        LanguageManager.LANGUAGE_CHINESE.equals(currentLanguage))) {
                                     if (realtimeTtsManager.isActive()) {
                                         realtimeTtsManager.finishLLM();
                                     }
                                 }
-                                
+
                                 isGenerating = false;
                                 updateSendButtonAppearance();
                                 updateChatSendButtonAppearance();
                                 scrollToBottom();
-                                
+
                                 saveChatToHistory();
-                                
+
                                 addActionButtons();
                             }
                         });
                     }
-                    
-                } catch (IOException e) {if (getActivity() != null) {
+
+                } catch (IOException e) {
+                    if (getActivity() != null) {
                         getActivity().runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
                                 isGenerating = false;
                                 updateSendButtonAppearance();
                                 updateChatSendButtonAppearance();
-                                
+
                                 if (currentStreamingTextView != null && currentStreamingTextView.getText().toString().isEmpty()) {
-                                    
+
                                     currentStreamingTextView.setText("❌ ལན་འདེབས་ཀློག་པ་ཕམ་པ།");
                                 } else {
-                                    
+
                                     appendToStreamingTextView("\n\n❌ [ལན་འདེབས་ཆད་པ།]");
                                 }
                             }
@@ -1965,35 +2084,35 @@ public class ChatFragment extends Fragment {
             }
         }).start();
     }
-    
+
     private void createStreamingTextView() {
-        
-        isThinkingPhase = true;  
+
+        isThinkingPhase = true;
         thinkingCompleted = false;
-        streamingTextBuffer.setLength(0); 
-        thinkingTextBuffer.setLength(0);  
-        
+        streamingTextBuffer.setLength(0);
+        thinkingTextBuffer.setLength(0);
+
         boolean enableThinking = false;
         if (thinkingToggle != null) {
             enableThinking = thinkingToggle.isChecked();
         } else if (deepThinkingSwitch != null) {
             enableThinking = deepThinkingSwitch.isChecked();
         }
-        
+
         if (enableThinking) {
             createThinkingArea();
-            
+
             return;
         }
-        
+
         currentStreamingTextView = new TextView(getContext());
-        
+
         // 根据当前语言设置Loading文本
         String language = getArguments() != null ? getArguments().getString("language") : LanguageManager.LANGUAGE_TIBETAN;
         if (language == null) {
             language = LanguageManager.getInstance(getContext()).getLanguage();
         }
-        
+
         String loadingText;
         switch (language) {
             case LanguageManager.LANGUAGE_CHINESE:
@@ -2007,66 +2126,67 @@ public class ChatFragment extends Fragment {
                 loadingText = "བསམ་བློ་གཏོང་བཞིན་ཡོད།...";
                 break;
         }
-        
+
         currentStreamingTextView.setText(loadingText);
         currentStreamingTextView.setTextSize(16);
         currentStreamingTextView.setTextColor(getThemeColor(android.R.attr.textColorPrimary));
         currentStreamingTextView.setPadding(48, 48, 48, 48);
         currentStreamingTextView.setBackgroundColor(getAnswerBackgroundColor());
-        
+
         TibetanFontHelper.applyTibetanFont(getContext(), currentStreamingTextView);
-        
+
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
         );
         params.setMargins(0, 0, 0, 16);
         currentStreamingTextView.setLayoutParams(params);
-        
+
         chatMessagesContainer.addView(currentStreamingTextView);
         scrollToBottom();
     }
-    
+
     private void createThinkingArea() {
-        
+
         currentThinkingContainer = new LinearLayout(getContext());
         currentThinkingContainer.setOrientation(LinearLayout.VERTICAL);
-        
+
         LinearLayout.LayoutParams containerParams = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
         );
         containerParams.setMargins(0, 0, 0, 16);
         currentThinkingContainer.setLayoutParams(containerParams);
-        
+
         LinearLayout headerLayout = new LinearLayout(getContext());
         headerLayout.setOrientation(LinearLayout.HORIZONTAL);
         headerLayout.setGravity(android.view.Gravity.CENTER_VERTICAL);
         headerLayout.setPadding(32, 16, 32, 16);
         headerLayout.setBackgroundColor(getThinkingBackgroundColor());
-        
+
         ImageView avatarView = new ImageView(getContext());
         avatarView.setImageResource(R.drawable.logo);
         avatarView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-        
+
         LinearLayout.LayoutParams avatarParams = new LinearLayout.LayoutParams(
                 (int) (24 * getResources().getDisplayMetrics().density),
                 (int) (24 * getResources().getDisplayMetrics().density)
         );
         avatarParams.setMargins(0, 0, 8, 0);
         avatarView.setLayoutParams(avatarParams);
-        
+
         avatarView.setClipToOutline(true);
         avatarView.setOutlineProvider(new android.view.ViewOutlineProvider() {
             @Override
             public void getOutline(android.view.View view, android.graphics.Outline outline) {
                 outline.setOval(0, 0, view.getWidth(), view.getHeight());
             }
-        });String language = getArguments() != null ? getArguments().getString("language") : LanguageManager.LANGUAGE_TIBETAN;
+        });
+        String language = getArguments() != null ? getArguments().getString("language") : LanguageManager.LANGUAGE_TIBETAN;
         if (language == null) {
             language = LanguageManager.getInstance(getContext()).getLanguage();
         }
-        
+
         String titleTextStr;
         switch (language) {
             case LanguageManager.LANGUAGE_CHINESE:
@@ -2080,13 +2200,13 @@ public class ChatFragment extends Fragment {
                 titleTextStr = "བསམ་བློ་གཏོང་རིམ།";
                 break;
         }
-        
+
         TextView titleText = new TextView(getContext());
         titleText.setText(titleTextStr);
         titleText.setTextSize(14);
         titleText.setTextColor(0xFF2E7D32);
         titleText.setTypeface(null, android.graphics.Typeface.BOLD);
-        
+
         ImageButton toggleButton = new ImageButton(getContext());
         toggleButton.setImageResource(android.R.drawable.arrow_up_float);
         toggleButton.setBackgroundResource(android.R.color.transparent);
@@ -2094,11 +2214,11 @@ public class ChatFragment extends Fragment {
         LinearLayout.LayoutParams toggleParams = new LinearLayout.LayoutParams(48, 48);
         toggleParams.setMargins(16, 0, 0, 0);
         toggleButton.setLayoutParams(toggleParams);
-        
+
         headerLayout.addView(avatarView);
         headerLayout.addView(titleText);
         headerLayout.addView(toggleButton);
-        
+
         currentThinkingTextView = new TextView(getContext());
         currentThinkingTextView.setText("");
         currentThinkingTextView.setTextSize(14);
@@ -2106,7 +2226,7 @@ public class ChatFragment extends Fragment {
         currentThinkingTextView.setPadding(32, 16, 32, 24);
         currentThinkingTextView.setBackgroundColor(getThinkingBackgroundColor());
         currentThinkingTextView.setVisibility(View.VISIBLE);
-        
+
         final boolean[] isExpanded = {true};
         headerLayout.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -2122,65 +2242,65 @@ public class ChatFragment extends Fragment {
                 }
             }
         });
-        
+
         currentThinkingContainer.addView(headerLayout);
         currentThinkingContainer.addView(currentThinkingTextView);
-        
+
         chatMessagesContainer.addView(currentThinkingContainer);
         scrollToBottom();
     }
-    
+
     private void createAnswerArea() {
-        
+
         streamingTextBuffer.setLength(0);
-        
+
         currentStreamingTextView = new TextView(getContext());
         currentStreamingTextView.setText("");
         currentStreamingTextView.setTextSize(16);
         currentStreamingTextView.setTextColor(getThemeColor(android.R.attr.textColorPrimary));
         currentStreamingTextView.setPadding(48, 48, 48, 48);
         currentStreamingTextView.setBackgroundColor(getAnswerBackgroundColor());
-        
+
         TibetanFontHelper.applyTibetanFont(getContext(), currentStreamingTextView);
-        
+
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
         );
         params.setMargins(0, 0, 0, 16);
         currentStreamingTextView.setLayoutParams(params);
-        
+
         chatMessagesContainer.addView(currentStreamingTextView);
         scrollToBottom();
     }
-    
+
     private void appendToStreamingTextView(String content) {
         if (currentStreamingTextView != null) {
-            
+
             streamingTextBuffer.append(content);
-            
+
             scheduleUIUpdate(currentStreamingTextView, streamingTextBuffer.toString());
         }
     }
-    
+
     private void scheduleUIUpdate(final TextView textView, final String text) {
         if (uiUpdateHandler == null) {
             uiUpdateHandler = new Handler(Looper.getMainLooper());
         }
-        
+
         long currentTime = System.currentTimeMillis();
         long timeSinceLastUpdate = currentTime - lastUIUpdateTime;
-        
+
         if (timeSinceLastUpdate >= UI_UPDATE_THROTTLE_MS) {
             updateUI(textView, text);
             lastUIUpdateTime = currentTime;
             hasPendingUpdate = false;
         } else {
-            
+
             if (!hasPendingUpdate) {
                 hasPendingUpdate = true;
                 long delay = UI_UPDATE_THROTTLE_MS - timeSinceLastUpdate;
-                
+
                 pendingUIUpdate = new Runnable() {
                     @Override
                     public void run() {
@@ -2189,94 +2309,109 @@ public class ChatFragment extends Fragment {
                         hasPendingUpdate = false;
                     }
                 };
-                
+
                 uiUpdateHandler.postDelayed(pendingUIUpdate, delay);
             }
         }
     }
-    
+
     private void updateUI(TextView textView, String text) {
         if (textView != null && getActivity() != null) {
             markwon.setMarkdown(textView, text);
             scrollToBottom();
         }
     }
-    
+
     private void appendToThinkingTextView(String thinking) {
         if (currentThinkingTextView != null) {
-            
+
             thinkingTextBuffer.append(thinking);
-            
+
             scheduleUIUpdate(currentThinkingTextView, thinkingTextBuffer.toString());
         }
     }
-    
-    private void stopGeneration() {isGenerating = false;
+
+    private void stopGeneration() {
+        isGenerating = false;
         isThinkingPhase = false;
         thinkingCompleted = false;
-        
+
         // 停止实时TTS
         if (realtimeTtsManager != null && realtimeTtsManager.isActive()) {
             realtimeTtsManager.stop();
         }
-        
+
         if (streamHandler != null) {
             streamHandler.removeCallbacksAndMessages(null);
         }
-        
+
         flushPendingUIUpdates();
-        
+
         setLoadingState(false);
         updateSendButtonAppearance();
         updateChatSendButtonAppearance();
-        
+
         safeShowToast("已停止生成");
-    
+
     }
-    
+
     private void flushPendingUIUpdates() {
         if (uiUpdateHandler != null && hasPendingUpdate) {
             uiUpdateHandler.removeCallbacks(pendingUIUpdate);
-            
+
             if (currentStreamingTextView != null) {
                 updateUI(currentStreamingTextView, streamingTextBuffer.toString());
             }
             if (currentThinkingTextView != null) {
                 updateUI(currentThinkingTextView, thinkingTextBuffer.toString());
             }
-            
+
             hasPendingUpdate = false;
         }
     }
-    
+
     private void handleResponse(String responseBody) {
         setLoadingState(false);
         isGenerating = true;
         updateSendButtonAppearance();
         updateChatSendButtonAppearance();
-        
+
         String answer = DEFAULT_ANSWER;
-        
-        if (responseBody != null && !responseBody.isEmpty()) {try {
-                JSONObject jsonResponse = new JSONObject(responseBody);String objectType = jsonResponse.optString("object", "");if (jsonResponse.has("choices")) {
-                    JSONArray choices = jsonResponse.getJSONArray("choices");if (choices.length() > 0) {
-                        JSONObject firstChoice = choices.getJSONObject(0);if (objectType.equals("chat.completion")) {
-                            
+
+        if (responseBody != null && !responseBody.isEmpty()) {
+            try {
+                JSONObject jsonResponse = new JSONObject(responseBody);
+                String objectType = jsonResponse.optString("object", "");
+                if (jsonResponse.has("choices")) {
+                    JSONArray choices = jsonResponse.getJSONArray("choices");
+                    if (choices.length() > 0) {
+                        JSONObject firstChoice = choices.getJSONObject(0);
+                        if (objectType.equals("chat.completion")) {
+
                             if (firstChoice.has("message")) {
-                                JSONObject message = firstChoice.getJSONObject("message");if (message.has("content")) {
-                                    answer = message.getString("content");} else {answer = "错误：响应中没有content字段";
+                                JSONObject message = firstChoice.getJSONObject("message");
+                                if (message.has("content")) {
+                                    answer = message.getString("content");
+                                } else {
+                                    answer = "错误：响应中没有content字段";
                                 }
-                            } else {answer = "错误：响应中没有message字段";
+                            } else {
+                                answer = "错误：响应中没有message字段";
                             }
                         } else if (objectType.equals("chat.completion.chunk")) {
-                            
+
                             if (firstChoice.has("delta")) {
-                                JSONObject delta = firstChoice.getJSONObject("delta");if (delta.has("content")) {
-                                    answer = delta.getString("content");} else {answer = "";
+                                JSONObject delta = firstChoice.getJSONObject("delta");
+                                if (delta.has("content")) {
+                                    answer = delta.getString("content");
+                                } else {
+                                    answer = "";
                                 }
-                            } else {answer = "";
+                            } else {
+                                answer = "";
                             }
-                        } else {if (firstChoice.has("message")) {
+                        } else {
+                            if (firstChoice.has("message")) {
                                 JSONObject message = firstChoice.getJSONObject("message");
                                 if (message.has("content")) {
                                     answer = message.getString("content");
@@ -2288,62 +2423,72 @@ public class ChatFragment extends Fragment {
                                 }
                             }
                         }
-                        
+
                         if (firstChoice.has("finish_reason") && !firstChoice.isNull("finish_reason")) {
-                            String finishReason = firstChoice.getString("finish_reason");if (finishReason.equals("length")) {}
+                            String finishReason = firstChoice.getString("finish_reason");
+                            if (finishReason.equals("length")) {
+                            }
                         }
-                        
+
                         if (jsonResponse.has("usage")) {
-                            JSONObject usage = jsonResponse.getJSONObject("usage");}
-                        
-                        if (jsonResponse.has("id")) {}
-                        
-                        if (jsonResponse.has("model")) {}
-                        
-                    } else {answer = "错误：服务器返回空的choices数组";
+                            JSONObject usage = jsonResponse.getJSONObject("usage");
+                        }
+
+                        if (jsonResponse.has("id")) {
+                        }
+
+                        if (jsonResponse.has("model")) {
+                        }
+
+                    } else {
+                        answer = "错误：服务器返回空的choices数组";
                     }
-                } else {answer = "错误：响应格式不正确，缺少choices字段";
-                }} catch (JSONException e) {
-                e.printStackTrace();answer = "解析响应失败";
+                } else {
+                    answer = "错误：响应格式不正确，缺少choices字段";
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+                answer = "解析响应失败";
             }
         }
-        
+
         final String finalAnswer = answer;
-        
+
         boolean needThinking = false;
         if (thinkingToggle != null) {
             needThinking = thinkingToggle.isChecked();
         } else if (deepThinkingSwitch != null) {
             needThinking = deepThinkingSwitch.isChecked();
-        }if (needThinking) {
-            
+        }
+        if (needThinking) {
+
             addThinkingProcess(DEFAULT_THINKING, new Runnable() {
                 @Override
                 public void run() {
                     if (isGenerating) {
-                        
+
                         addBotMessageStreaming(finalAnswer);
                     }
                 }
             });
         } else {
-            
+
             addBotMessageStreaming(finalAnswer);
         }
     }
-    
+
     private void setLoadingState(boolean isLoading) {
         if (isLoading) {
             progressBar.setVisibility(View.VISIBLE);
-            
+
             chatSendButton.setEnabled(false);
         } else {
             progressBar.setVisibility(View.GONE);
-            
+
             chatSendButton.setEnabled(true);
         }
     }
-    
+
     private void addThinkingProcess(final String thinkingText, final Runnable onComplete) {
         LinearLayout thinkingContainer = new LinearLayout(getContext());
         thinkingContainer.setOrientation(LinearLayout.VERTICAL);
@@ -2353,25 +2498,25 @@ public class ChatFragment extends Fragment {
         );
         containerParams.setMargins(0, 0, 0, 24);
         thinkingContainer.setLayoutParams(containerParams);
-        
+
         LinearLayout headerLayout = new LinearLayout(getContext());
         headerLayout.setOrientation(LinearLayout.HORIZONTAL);
         headerLayout.setPadding(32, 24, 32, 24);
         headerLayout.setBackgroundColor(getThinkingBackgroundColor());
-        
+
         TextView headerText = new TextView(getContext());
         headerText.setText("🤔 བསམ་བློ་གཏོང་རིམ།");
         headerText.setTextSize(14);
         headerText.setTextColor(0xFF666666);
         headerText.setTypeface(null, android.graphics.Typeface.BOLD);
-        
+
         LinearLayout.LayoutParams headerTextParams = new LinearLayout.LayoutParams(
                 0,
                 LinearLayout.LayoutParams.WRAP_CONTENT,
                 1
         );
         headerText.setLayoutParams(headerTextParams);
-        
+
         ImageButton toggleButton = new ImageButton(getContext());
         toggleButton.setImageResource(android.R.drawable.arrow_down_float);
         toggleButton.setBackground(null);
@@ -2381,17 +2526,17 @@ public class ChatFragment extends Fragment {
         );
         toggleButton.setLayoutParams(toggleParams);
         toggleButton.setScaleType(android.widget.ImageView.ScaleType.FIT_CENTER);
-        
+
         headerLayout.addView(headerText);
         headerLayout.addView(toggleButton);
-        
+
         TextView thinkingContent = new TextView(getContext());
         thinkingContent.setTextSize(14);
         thinkingContent.setTextColor(getThemeColor(android.R.attr.textColorPrimary));
         thinkingContent.setPadding(32, 16, 32, 24);
         thinkingContent.setBackgroundColor(getThinkingBackgroundColor());
         thinkingContent.setVisibility(View.GONE);
-        
+
         final boolean[] isExpanded = {false};
         headerLayout.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -2407,72 +2552,73 @@ public class ChatFragment extends Fragment {
                 }
             }
         });
-        
+
         thinkingContainer.addView(headerLayout);
         thinkingContainer.addView(thinkingContent);
         chatMessagesContainer.addView(thinkingContainer);
-        
+
         streamText(thinkingContent, thinkingText, 30, onComplete);
     }
-    
+
     private void addBotMessageStreaming(final String message) {
-        
+
         LinearLayout messageContainer = new LinearLayout(getContext());
         messageContainer.setOrientation(LinearLayout.HORIZONTAL);
         messageContainer.setGravity(android.view.Gravity.START);
-        
+
         LinearLayout.LayoutParams containerParams = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
         );
         containerParams.setMargins(0, 0, 0, 16);
         messageContainer.setLayoutParams(containerParams);
-        
+
         ImageView avatarView = new ImageView(getContext());
         avatarView.setImageResource(R.drawable.logo);
         avatarView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-        
+
         LinearLayout.LayoutParams avatarParams = new LinearLayout.LayoutParams(
                 (int) (40 * getResources().getDisplayMetrics().density),
                 (int) (40 * getResources().getDisplayMetrics().density)
         );
         avatarParams.setMargins(0, 0, 8, 0);
         avatarView.setLayoutParams(avatarParams);
-        
+
         avatarView.setClipToOutline(true);
         avatarView.setOutlineProvider(new android.view.ViewOutlineProvider() {
             @Override
             public void getOutline(android.view.View view, android.graphics.Outline outline) {
                 outline.setOval(0, 0, view.getWidth(), view.getHeight());
             }
-        });TextView messageView = new TextView(getContext());
+        });
+        TextView messageView = new TextView(getContext());
         messageView.setTextSize(16);
         messageView.setTextColor(getThemeColor(android.R.attr.textColorPrimary));
         messageView.setPadding(32, 32, 32, 32);
         messageView.setBackgroundColor(getAnswerBackgroundColor());
-        
+
         LinearLayout.LayoutParams messageParams = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
         );
         messageView.setLayoutParams(messageParams);
         messageView.setMaxWidth((int) (getResources().getDisplayMetrics().widthPixels - 80 * getResources().getDisplayMetrics().density));
-        
+
         messageContainer.addView(avatarView);
         messageContainer.addView(messageView);
-        
+
         chatMessagesContainer.addView(messageContainer);
         scrollToBottom();
-        
+
         streamText(messageView, message, 50, null);
     }
-    
+
     private void streamText(final TextView textView, final String fullText, final long delayMillis, final Runnable onComplete) {
         if (streamHandler == null) {
             streamHandler = new Handler(Looper.getMainLooper());
         }
         final int[] currentIndex = {0};
-        
+
         streamHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -2482,12 +2628,12 @@ public class ChatFragment extends Fragment {
                     currentIndex[0]++;
                     streamHandler.postDelayed(this, delayMillis);
                 } else if (currentIndex[0] > fullText.length()) {
-                    
+
                     if (onComplete != null) {
-                        
+
                         onComplete.run();
                     } else {
-                        
+
                         isGenerating = false;
                         updateSendButtonAppearance();
                         updateChatSendButtonAppearance();
@@ -2496,13 +2642,13 @@ public class ChatFragment extends Fragment {
             }
         });
     }
-    
+
     private void switchLanguage() {
-        
+
         LanguageManager languageManager = LanguageManager.getInstance(getContext());
         String currentLang = languageManager.getLanguage();
         String newLanguage;
-        
+
         switch (currentLang) {
             case LanguageManager.LANGUAGE_TIBETAN:
                 newLanguage = LanguageManager.LANGUAGE_CHINESE;
@@ -2515,26 +2661,26 @@ public class ChatFragment extends Fragment {
                 newLanguage = LanguageManager.LANGUAGE_TIBETAN;
                 break;
         }
-        
+
         languageManager.setLanguage(newLanguage);
-        
+
         if (getActivity() instanceof MainActivity) {
             ((MainActivity) getActivity()).onLanguageChanged(newLanguage);
         }
     }
-    
+
     private void showLanguageDialog() {
         LanguageManager languageManager = LanguageManager.getInstance(getContext());
         String currentLang = languageManager.getLanguage();
-        
+
         final String[] languages = {
-            LanguageManager.LANGUAGE_TIBETAN,
-            LanguageManager.LANGUAGE_CHINESE,
-            LanguageManager.LANGUAGE_ENGLISH
+                LanguageManager.LANGUAGE_TIBETAN,
+                LanguageManager.LANGUAGE_CHINESE,
+                LanguageManager.LANGUAGE_ENGLISH
         };
-        
+
         final String[] languageNames = {"བོད་སྐད།", "中文", "English"};
-        
+
         int currentIndex = 0;
         for (int i = 0; i < languages.length; i++) {
             if (languages[i].equals(currentLang)) {
@@ -2542,41 +2688,41 @@ public class ChatFragment extends Fragment {
                 break;
             }
         }
-        
+
         new android.app.AlertDialog.Builder(getContext())
                 .setTitle("选择语言 / Select Language / སྐད་ཡིག་འདེམས།")
                 .setSingleChoiceItems(languageNames, currentIndex, new android.content.DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(android.content.DialogInterface dialog, int which) {
                         String selectedLanguage = languages[which];
-                        
+
                         languageManager.setLanguage(selectedLanguage);
-                        
+
                         if (getActivity() instanceof MainActivity) {
                             ((MainActivity) getActivity()).onLanguageChanged(selectedLanguage);
                         }
-                        
+
                         dialog.dismiss();
                     }
                 })
                 .setNegativeButton("取消 / Cancel / ཕྱིར་འཐེན།", null)
                 .show();
     }
-    
+
     private String getFeatureCardText(int cardIndex) {
         String[][] featureTexts = {
-            
-            {"ལོ་ལྔའི་འཆར་འགོད་བཅུ་ལྔ་བར་སློབ་སྦྱོང་བྱས་པའི་མྱོང་ཚོར་ཞིག་བྲིས་རོགས།", "དགེ་རྒན་ལ་བསྟོད་པའི་སྙན་ངག་ཅིག་བྲིས་རོགས།", "སློབ་གཙོ་ལ་སློབ་ཐོན་མཛད་སྒོའི་ཐོག་གི་གཏམ་བཤད་ཤིག་བྲིས་རོགས།", "གསོ་བ་རིག་པ་བསླབ་པའི་དགོས་པ་ཅི་ཡིན།"},
-            
-            {"请写一篇‘十五五规划’的学习心得。", "写一首赞美老师的诗。", "请给校长写一份毕业典礼致辞。", "学习医学的必要是什么？"},
-            
-            {"Please write a study reflection on the 15th Five Year Plan.", "Write a poem praising the teacher.", "Please write a graduation ceremony speech for the principal.", "What is the necessity of studying medicine?"}
+
+                {"ལོ་ལྔའི་འཆར་འགོད་བཅུ་ལྔ་བར་སློབ་སྦྱོང་བྱས་པའི་མྱོང་ཚོར་ཞིག་བྲིས་རོགས།", "དགེ་རྒན་ལ་བསྟོད་པའི་སྙན་ངག་ཅིག་བྲིས་རོགས།", "སློབ་གཙོ་ལ་སློབ་ཐོན་མཛད་སྒོའི་ཐོག་གི་གཏམ་བཤད་ཤིག་བྲིས་རོགས།", "གསོ་བ་རིག་པ་བསླབ་པའི་དགོས་པ་ཅི་ཡིན།"},
+
+                {"请写一篇‘十五五规划’的学习心得。", "写一首赞美老师的诗。", "请给校长写一份毕业典礼致辞。", "学习医学的必要是什么？"},
+
+                {"Please write a study reflection on the 15th Five Year Plan.", "Write a poem praising the teacher.", "Please write a graduation ceremony speech for the principal.", "What is the necessity of studying medicine?"}
         };
-        
+
         LanguageManager languageManager = LanguageManager.getInstance(getContext());
         String currentLang = languageManager.getLanguage();
-        int languageIndex = 0; 
-        
+        int languageIndex = 0;
+
         switch (currentLang) {
             case LanguageManager.LANGUAGE_TIBETAN:
                 languageIndex = 0;
@@ -2588,116 +2734,120 @@ public class ChatFragment extends Fragment {
                 languageIndex = 2;
                 break;
         }
-        
+
         return featureTexts[languageIndex][cardIndex];
     }
-    
+
     private void showModelSelector() {
-        
+
         safeShowToast("当前模型: SunshineGLM");
     }
-    
+
     private int getThemeColor(int attrId) {
         boolean isDarkMode = ThemeManager.getInstance(getContext()).isDarkMode();
         if (attrId == android.R.attr.textColorPrimary) {
-            return isDarkMode ? 0xFFFFFFFF : 0xFF000000; 
+            return isDarkMode ? 0xFFFFFFFF : 0xFF000000;
         } else if (attrId == android.R.attr.colorBackground) {
-            return isDarkMode ? 0xFF121212 : 0xFFFFFFFF; 
+            return isDarkMode ? 0xFF121212 : 0xFFFFFFFF;
         }
-        return 0xFF000000; 
+        return 0xFF000000;
     }
-    
+
     private int getAnswerBackgroundColor() {
-        
+
         boolean isDarkMode = ThemeManager.getInstance(getContext()).isDarkMode();
         if (isDarkMode) {
-            return 0xFF2A2A2A; 
+            return 0xFF2A2A2A;
         } else {
-            return 0xFFE3F2FD; 
+            return 0xFFE3F2FD;
         }
     }
-    
+
     private int getThinkingBackgroundColor() {
-        
+
         boolean isDarkMode = ThemeManager.getInstance(getContext()).isDarkMode();
         if (isDarkMode) {
-            return 0xFF1B2B3B; 
+            return 0xFF1B2B3B;
         } else {
-            return 0xFFE8F5E8; 
+            return 0xFFE8F5E8;
         }
     }
-    
+
     private int getUserMessageBackgroundColor() {
-        
+
         boolean isDarkMode = ThemeManager.getInstance(getContext()).isDarkMode();
         if (isDarkMode) {
-            return 0xFF121212; 
+            return 0xFF121212;
         } else {
-            return 0xFFF5F5F5; 
+            return 0xFFF5F5F5;
         }
     }
-    
+
     private void saveChatToHistory() {
-        
-        if (!ThemeManager.getInstance(getContext()).isAutoSaveChat()) {return;
+
+        if (!ThemeManager.getInstance(getContext()).isAutoSaveChat()) {
+            return;
         }
-        
+
         currentAnswer = streamingTextBuffer.toString();
         currentThinkingContent = thinkingTextBuffer.toString();
-        
-        if (currentQuestion != null && !currentQuestion.trim().isEmpty() && 
-            currentAnswer != null && !currentAnswer.trim().isEmpty()) {
-            
+
+        if (currentQuestion != null && !currentQuestion.trim().isEmpty() &&
+                currentAnswer != null && !currentAnswer.trim().isEmpty()) {
+
             try {
                 JSONObject assistantMessage = new JSONObject();
                 assistantMessage.put("role", "assistant");
                 assistantMessage.put("content", currentAnswer);
-                
+
                 if (currentThinkingContent != null && !currentThinkingContent.trim().isEmpty()) {
-                    assistantMessage.put("thinking_content", currentThinkingContent);}
-                
-                conversationHistory.add(assistantMessage);} catch (JSONException e) {}
-            
+                    assistantMessage.put("thinking_content", currentThinkingContent);
+                }
+
+                conversationHistory.add(assistantMessage);
+            } catch (JSONException e) {
+            }
+
             saveOrUpdateConversationSession();
         }
     }
-    
+
     private void addActionButtons() {
         if (currentStreamingTextView == null) {
             return;
         }
         addActionButtonsForMessage(currentStreamingTextView, streamingTextBuffer.toString());
     }
-    
+
     private void addActionButtonsForMessage(TextView messageView, final String messageContent) {
         if (messageView == null) {
             return;
         }
-        
+
         LinearLayout buttonContainer = new LinearLayout(getContext());
         buttonContainer.setOrientation(LinearLayout.HORIZONTAL);
         buttonContainer.setGravity(android.view.Gravity.START);
         buttonContainer.setPadding(48, 0, 48, 16);
-        
+
         LinearLayout.LayoutParams containerParams = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
         );
         containerParams.setMargins(0, 0, 0, 16);
         buttonContainer.setLayoutParams(containerParams);
-        
+
         int buttonSize = (int) (40 * getResources().getDisplayMetrics().density);  // 统一按钮尺寸为40dp
         int buttonMargin = (int) (4 * getResources().getDisplayMetrics().density);
-        
+
         final ImageButton likeButton = createActionButton(R.drawable.ic_thumb_up_outline, buttonSize, buttonMargin);
         final ImageButton dislikeButton = createActionButton(R.drawable.ic_thumb_down_outline, buttonSize, buttonMargin);
         ImageButton copyButton = createActionButton(R.drawable.ic_copy, buttonSize, buttonMargin);
         ImageButton shareButton = createActionButton(R.drawable.ic_share, buttonSize, buttonMargin);
         ImageButton playButton = createActionButton(R.drawable.ic_play, buttonSize, buttonMargin);
-        
+
         final boolean[] isLiked = {false};
         final boolean[] isDisliked = {false};
-        
+
         likeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -2713,7 +2863,7 @@ public class ChatFragment extends Fragment {
                 }
             }
         });
-        
+
         dislikeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -2729,7 +2879,7 @@ public class ChatFragment extends Fragment {
                 }
             }
         });
-        
+
         copyButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -2741,37 +2891,37 @@ public class ChatFragment extends Fragment {
                 safeShowToast("已复制到剪贴板");
             }
         });
-        
+
         shareButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
             }
         });
-        
+
         playButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // 需求6: 开放中文模式下的播放按钮
                 // 检查是否为藏文或中文模式
                 String language = LanguageManager.getInstance(getContext()).getLanguage();
-                if (!LanguageManager.LANGUAGE_TIBETAN.equals(language) && 
-                    !LanguageManager.LANGUAGE_CHINESE.equals(language)) {
+                if (!LanguageManager.LANGUAGE_TIBETAN.equals(language) &&
+                        !LanguageManager.LANGUAGE_CHINESE.equals(language)) {
                     safeShowToast("语音合成仅支持藏文和中文");
                     return;
                 }
-                
+
                 // 问题1优化：只在实时播报真正播放时禁用手动播放
                 if (realtimeTtsManager != null) {
                     boolean isActive = realtimeTtsManager.isActive();
                     boolean isPlaying = realtimeTtsManager.isPlaying();
                     Log.d("ChatFragment", "实时TTS状态 - isActive: " + isActive + ", isPlaying: " + isPlaying);
-                    
+
                     if (isPlaying) {
                         safeShowToast("实时播报播放中，请稍候");
                         return;
                     }
                 }
-                
+
                 // 如果正在播放，停止播放
                 if (ttsManager.isPlaying()) {
                     ttsManager.stop();
@@ -2782,19 +2932,19 @@ public class ChatFragment extends Fragment {
                     }
                     return;
                 }
-                
+
                 // 停止其他正在播放的按钮
                 if (currentPlayingButton != null && currentPlayingButton != playButton) {
                     currentPlayingButton.setImageResource(R.drawable.ic_play);
                 }
-                
+
                 // 开始播放
                 currentPlayingButton = playButton;
                 playButton.setImageResource(R.drawable.ic_stop);
-                
+
                 // 提取纯文本（去除markdown格式）
                 String plainText = stripMarkdown(messageContent);
-                
+
                 ttsManager.setCallback(new TtsManager.TtsCallback() {
                     @Override
                     public void onStart() {
@@ -2805,7 +2955,7 @@ public class ChatFragment extends Fragment {
                             }
                         });
                     }
-                    
+
                     @Override
                     public void onComplete() {
                         getActivity().runOnUiThread(new Runnable() {
@@ -2818,7 +2968,7 @@ public class ChatFragment extends Fragment {
                             }
                         });
                     }
-                    
+
                     @Override
                     public void onError(String error) {
                         getActivity().runOnUiThread(new Runnable() {
@@ -2832,299 +2982,333 @@ public class ChatFragment extends Fragment {
                             }
                         });
                     }
-                    
+
                     @Override
                     public void onProgress(int current, int total) {
                         // 进度回调（可选：显示进度）
                         Log.d("TTS", "播放进度: " + current + "/" + total);
                     }
                 });
-                
+
                 ttsManager.synthesize(plainText);
             }
         });
-        
+
         buttonContainer.addView(likeButton);
         buttonContainer.addView(dislikeButton);
         buttonContainer.addView(copyButton);
         buttonContainer.addView(shareButton);
         buttonContainer.addView(playButton);
-        
+
         int messageIndex = chatMessagesContainer.indexOfChild(messageView);
         if (messageIndex >= 0) {
             chatMessagesContainer.addView(buttonContainer, messageIndex + 1);
         }
     }
-    
+
     private ImageButton createActionButton(int iconResId, int size, int margin) {
         ImageButton button = new ImageButton(getContext());
         button.setImageResource(iconResId);
         button.setBackground(null);
         button.setScaleType(ImageButton.ScaleType.CENTER_INSIDE);
-        
+
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(size, size);
         params.setMargins(0, 0, margin, 0);
         button.setLayoutParams(params);
-        
+
         return button;
     }
-    
+
     private void saveOrUpdateConversationSession() {
         ChatHistory chatHistory;
-        
+
         if (isNewSession) {
-            
+
             chatHistory = new ChatHistory();
             currentSessionId = chatHistory.getId();
-            isNewSession = false;} else {
-            
+            isNewSession = false;
+        } else {
+
             chatHistory = historyManager.getHistoryById(currentSessionId);
             if (chatHistory == null) {
-                
+
                 chatHistory = new ChatHistory();
-                currentSessionId = chatHistory.getId();}
+                currentSessionId = chatHistory.getId();
+            }
         }
-        
+
         chatHistory.getConversationMessages().clear();
-        
+
         try {
             for (JSONObject msgJson : conversationHistory) {
                 String role = msgJson.getString("role");
                 String content = msgJson.getString("content");
-                
+
                 String thinkingContent = null;
                 if (msgJson.has("thinking_content")) {
                     thinkingContent = msgJson.getString("thinking_content");
                 }
-                
+
                 if ("assistant".equals(role) && thinkingContent != null && !thinkingContent.trim().isEmpty()) {
-                    chatHistory.addMessage(role, content, thinkingContent);} else {
-                    chatHistory.addMessage(role, content);}
+                    chatHistory.addMessage(role, content, thinkingContent);
+                } else {
+                    chatHistory.addMessage(role, content);
+                }
             }
-        } catch (JSONException e) {}
-        
+        } catch (JSONException e) {
+        }
+
         if (isNewSession || historyManager.getHistoryById(currentSessionId) == null) {
-            historyManager.addChatHistory(chatHistory);} else {
-            historyManager.updateChatHistory(chatHistory);}
+            historyManager.addChatHistory(chatHistory);
+        } else {
+            historyManager.updateChatHistory(chatHistory);
+        }
     }
-    
+
     private void clearConversationHistory() {
         if (conversationHistory != null) {
-            conversationHistory.clear();}
-        
+            conversationHistory.clear();
+        }
+
         isNewSession = true;
         currentSessionId = null;
         pendingDeleteIndex = -1;  // 重置待删除索引
     }
-    
+
     /**
      * 从历史消息重新发送（点击修改按钮时调用）
-     * @param messageIndex 消息在chatMessagesContainer中的索引
+     *
+     * @param messageIndex   消息在chatMessagesContainer中的索引
      * @param messageContent 消息内容
      */
     private void resendFromMessage(int messageIndex, String messageContent) {
         Log.d("ChatFragment", "resendFromMessage 被调用，索引: " + messageIndex + ", 内容: " + messageContent);
-        
+
         if (isGenerating) {
             Log.d("ChatFragment", "正在生成中，不允许修改");
             safeShowToast("请等待当前回答完成");
             return;
         }
-        
+
         // 将问题填充到输入框
         chatInputEditText.setText(messageContent);
         chatInputEditText.setSelection(messageContent.length());
-        
+
         // 记录待删除的索引，但不立即删除
         pendingDeleteIndex = messageIndex;
-        
+
         Log.d("ChatFragment", "已将问题填充到输入框，等待发送时删除索引 " + messageIndex + " 及之后的消息");
         safeShowToast("已填充到输入框，可以修改后发送");
     }
-    
+
     private void loadHistoryIfNeeded() {
         Bundle args = getArguments();
-        if (args != null && args.containsKey("history_id")) {if (getView() != null) {
+        if (args != null && args.containsKey("history_id")) {
+            if (getView() != null) {
                 View greetingText = getView().findViewById(R.id.greetingText);
                 if (greetingText != null && greetingText instanceof TextView) {
-                    
+
                     ((TextView) greetingText).setText("");
-                    greetingText.setVisibility(View.GONE);}
-                
+                    greetingText.setVisibility(View.GONE);
+                }
+
                 if (centerLayout != null) {
                     centerLayout.setVisibility(View.GONE);
                 }
             }
-            
+
             String historyId = args.getString("history_id");
             loadHistoryConversation(historyId);
         }
     }
-    
+
     private void safeShowToast(String message) {
         try {
             if (getContext() != null && getActivity() != null && !getActivity().isFinishing()) {
                 Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
             }
-        } catch (Exception e) {}
+        } catch (Exception e) {
+        }
     }
-    
+
     private void loadHistoryConversation(String historyId) {
         try {
             ChatHistory history = historyManager.getHistoryById(historyId);
-            if (history == null) {return;
-            }currentSessionId = historyId;
-        isNewSession = false;
-        
-        if (getView() != null) {
-            View greetingText = getView().findViewById(R.id.greetingText);
-            if (greetingText != null && greetingText instanceof TextView) {
-                ((TextView) greetingText).setText("");
-                greetingText.setVisibility(View.GONE);}
-        }
-        
-        switchToChatView();
-        isFirstMessage = false;
-        
-        boolean hasThinking = history.hasThinking();
-        if (!hasThinking && history.getConversationMessages() != null) {
-            
-            for (ChatHistory.ConversationMessage msg : history.getConversationMessages()) {
-                if (msg.thinkingContent != null && !msg.thinkingContent.trim().isEmpty()) {
-                    hasThinking = true;
-                    break;
+            if (history == null) {
+                return;
+            }
+            currentSessionId = historyId;
+            isNewSession = false;
+
+            if (getView() != null) {
+                View greetingText = getView().findViewById(R.id.greetingText);
+                if (greetingText != null && greetingText instanceof TextView) {
+                    ((TextView) greetingText).setText("");
+                    greetingText.setVisibility(View.GONE);
                 }
             }
-        }
-        
-        if (deepThinkingSwitch != null) {
-            deepThinkingSwitch.setChecked(hasThinking);}
-        
-        conversationHistory.clear();
-        
-        if (history.getConversationMessages() != null && !history.getConversationMessages().isEmpty()) {
-            for (ChatHistory.ConversationMessage msg : history.getConversationMessages()) {
-                try {
-                    JSONObject jsonMsg = new JSONObject();
-                    jsonMsg.put("role", msg.role);
-                    jsonMsg.put("content", msg.content);
-                    
+
+            switchToChatView();
+            isFirstMessage = false;
+
+            boolean hasThinking = history.hasThinking();
+            if (!hasThinking && history.getConversationMessages() != null) {
+
+                for (ChatHistory.ConversationMessage msg : history.getConversationMessages()) {
                     if (msg.thinkingContent != null && !msg.thinkingContent.trim().isEmpty()) {
-                        jsonMsg.put("thinking_content", msg.thinkingContent);}
-                    
-                    conversationHistory.add(jsonMsg);
-                    
-                    if ("user".equals(msg.role)) {addUserMessage(msg.content);
-                    } else if ("assistant".equals(msg.role)) {if (msg.thinkingContent != null && !msg.thinkingContent.isEmpty()) {
-                            addThinkingMessage(msg.thinkingContent);
-                        }
-                        addBotMessage(msg.content);
-                    }
-                } catch (JSONException e) {}
-            }
-        } else {
-            
-            if (history.getQuestion() != null && !history.getQuestion().isEmpty()) {
-                addUserMessage(history.getQuestion());
-                
-                try {
-                    JSONObject userMsg = new JSONObject();
-                    userMsg.put("role", "user");
-                    userMsg.put("content", history.getQuestion());
-                    conversationHistory.add(userMsg);
-                } catch (JSONException e) {}
-            }
-            
-            if (history.getAnswer() != null && !history.getAnswer().isEmpty()) {
-                if (history.hasThinking() && history.getThinkingContent() != null) {
-                    addThinkingMessage(history.getThinkingContent());
-                }
-                addBotMessage(history.getAnswer());
-                
-                try {
-                    JSONObject assistantMsg = new JSONObject();
-                    assistantMsg.put("role", "assistant");
-                    assistantMsg.put("content", history.getAnswer());
-                    conversationHistory.add(assistantMsg);
-                } catch (JSONException e) {}
-            }
-        }if (getView() != null) {
-            getView().post(new Runnable() {
-                @Override
-                public void run() {if (chatGreetingLayout != null) {
-                        chatGreetingLayout.setVisibility(View.GONE);}
-                    if (centerLayout != null) {
-                        centerLayout.setVisibility(View.GONE);}
-                    
-                    if (getView() != null) {
-                        View greetingText = getView().findViewById(R.id.greetingText);
-                        if (greetingText != null && greetingText instanceof TextView) {
-                            ((TextView) greetingText).setText("");
-                            greetingText.setVisibility(View.GONE);} else {}
-                    }
-                    
-                    if (chatScrollView != null) {
-                        chatScrollView.setVisibility(View.VISIBLE);
-                        chatScrollView.bringToFront();}
-                    if (chatInputContainer != null) {
-                        chatInputContainer.setVisibility(View.VISIBLE);}
-                    
-                    if (getView() != null) {
-                        getView().requestLayout();}}
-            });
-            
-            getView().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    if (getView() != null) {
-                        View greetingText = getView().findViewById(R.id.greetingText);
-                        if (greetingText != null && greetingText instanceof TextView) {
-                            ((TextView) greetingText).setText("");
-                            if (greetingText.getVisibility() == View.VISIBLE) {
-                                greetingText.setVisibility(View.GONE);}
-                        }
+                        hasThinking = true;
+                        break;
                     }
                 }
-            }, 100); 
-        }
-        
-        } catch (Exception e) {isNewSession = true;
+            }
+
+            if (deepThinkingSwitch != null) {
+                deepThinkingSwitch.setChecked(hasThinking);
+            }
+
+            conversationHistory.clear();
+
+            if (history.getConversationMessages() != null && !history.getConversationMessages().isEmpty()) {
+                for (ChatHistory.ConversationMessage msg : history.getConversationMessages()) {
+                    try {
+                        JSONObject jsonMsg = new JSONObject();
+                        jsonMsg.put("role", msg.role);
+                        jsonMsg.put("content", msg.content);
+
+                        if (msg.thinkingContent != null && !msg.thinkingContent.trim().isEmpty()) {
+                            jsonMsg.put("thinking_content", msg.thinkingContent);
+                        }
+
+                        conversationHistory.add(jsonMsg);
+
+                        if ("user".equals(msg.role)) {
+                            addUserMessage(msg.content);
+                        } else if ("assistant".equals(msg.role)) {
+                            if (msg.thinkingContent != null && !msg.thinkingContent.isEmpty()) {
+                                addThinkingMessage(msg.thinkingContent);
+                            }
+                            addBotMessage(msg.content);
+                        }
+                    } catch (JSONException e) {
+                    }
+                }
+            } else {
+
+                if (history.getQuestion() != null && !history.getQuestion().isEmpty()) {
+                    addUserMessage(history.getQuestion());
+
+                    try {
+                        JSONObject userMsg = new JSONObject();
+                        userMsg.put("role", "user");
+                        userMsg.put("content", history.getQuestion());
+                        conversationHistory.add(userMsg);
+                    } catch (JSONException e) {
+                    }
+                }
+
+                if (history.getAnswer() != null && !history.getAnswer().isEmpty()) {
+                    if (history.hasThinking() && history.getThinkingContent() != null) {
+                        addThinkingMessage(history.getThinkingContent());
+                    }
+                    addBotMessage(history.getAnswer());
+
+                    try {
+                        JSONObject assistantMsg = new JSONObject();
+                        assistantMsg.put("role", "assistant");
+                        assistantMsg.put("content", history.getAnswer());
+                        conversationHistory.add(assistantMsg);
+                    } catch (JSONException e) {
+                    }
+                }
+            }
+            if (getView() != null) {
+                getView().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (chatGreetingLayout != null) {
+                            chatGreetingLayout.setVisibility(View.GONE);
+                        }
+                        if (centerLayout != null) {
+                            centerLayout.setVisibility(View.GONE);
+                        }
+
+                        if (getView() != null) {
+                            View greetingText = getView().findViewById(R.id.greetingText);
+                            if (greetingText != null && greetingText instanceof TextView) {
+                                ((TextView) greetingText).setText("");
+                                greetingText.setVisibility(View.GONE);
+                            } else {
+                            }
+                        }
+
+                        if (chatScrollView != null) {
+                            chatScrollView.setVisibility(View.VISIBLE);
+                            chatScrollView.bringToFront();
+                        }
+                        if (chatInputContainer != null) {
+                            chatInputContainer.setVisibility(View.VISIBLE);
+                        }
+
+                        if (getView() != null) {
+                            getView().requestLayout();
+                        }
+                    }
+                });
+
+                getView().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (getView() != null) {
+                            View greetingText = getView().findViewById(R.id.greetingText);
+                            if (greetingText != null && greetingText instanceof TextView) {
+                                ((TextView) greetingText).setText("");
+                                if (greetingText.getVisibility() == View.VISIBLE) {
+                                    greetingText.setVisibility(View.GONE);
+                                }
+                            }
+                        }
+                    }
+                }, 100);
+            }
+
+        } catch (Exception e) {
+            isNewSession = true;
             currentSessionId = null;
             if (conversationHistory != null) {
                 conversationHistory.clear();
             }
         }
     }
-    
+
     private void addThinkingMessage(String thinkingContent) {
-        
+
         LinearLayout thinkingContainer = new LinearLayout(getContext());
         thinkingContainer.setOrientation(LinearLayout.VERTICAL);
-        
+
         LinearLayout.LayoutParams containerParams = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
         );
         containerParams.setMargins(0, 0, 0, 16);
         thinkingContainer.setLayoutParams(containerParams);
-        
+
         LinearLayout headerLayout = new LinearLayout(getContext());
         headerLayout.setOrientation(LinearLayout.HORIZONTAL);
         headerLayout.setGravity(android.view.Gravity.CENTER_VERTICAL);
         headerLayout.setPadding(32, 16, 32, 16);
         headerLayout.setBackgroundColor(getThinkingBackgroundColor());
-        
+
         ImageView avatarView = new ImageView(getContext());
         avatarView.setImageResource(R.drawable.logo);
         avatarView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-        
+
         LinearLayout.LayoutParams avatarParams = new LinearLayout.LayoutParams(
                 (int) (24 * getResources().getDisplayMetrics().density),
                 (int) (24 * getResources().getDisplayMetrics().density)
         );
         avatarParams.setMargins(0, 0, 8, 0);
         avatarView.setLayoutParams(avatarParams);
-        
+
         avatarView.setClipToOutline(true);
         avatarView.setOutlineProvider(new android.view.ViewOutlineProvider() {
             @Override
@@ -3132,12 +3316,12 @@ public class ChatFragment extends Fragment {
                 outline.setOval(0, 0, view.getWidth(), view.getHeight());
             }
         });
-        
+
         String language = getArguments() != null ? getArguments().getString("language") : LanguageManager.LANGUAGE_TIBETAN;
         if (language == null) {
             language = LanguageManager.getInstance(getContext()).getLanguage();
         }
-        
+
         String titleTextStr;
         switch (language) {
             case LanguageManager.LANGUAGE_CHINESE:
@@ -3151,13 +3335,13 @@ public class ChatFragment extends Fragment {
                 titleTextStr = "བསམ་བློ་གཏོང་རིམ།";
                 break;
         }
-        
+
         TextView titleText = new TextView(getContext());
         titleText.setText(titleTextStr);
         titleText.setTextSize(14);
         titleText.setTextColor(0xFF2E7D32);
         titleText.setTypeface(null, android.graphics.Typeface.BOLD);
-        
+
         ImageButton toggleButton = new ImageButton(getContext());
         toggleButton.setImageResource(android.R.drawable.arrow_up_float);
         toggleButton.setBackgroundResource(android.R.color.transparent);
@@ -3165,11 +3349,11 @@ public class ChatFragment extends Fragment {
         LinearLayout.LayoutParams toggleParams = new LinearLayout.LayoutParams(48, 48);
         toggleParams.setMargins(16, 0, 0, 0);
         toggleButton.setLayoutParams(toggleParams);
-        
+
         headerLayout.addView(avatarView);
         headerLayout.addView(titleText);
         headerLayout.addView(toggleButton);
-        
+
         TextView thinkingText = new TextView(getContext());
         markwon.setMarkdown(thinkingText, thinkingContent);
         thinkingText.setTextSize(14);
@@ -3177,7 +3361,7 @@ public class ChatFragment extends Fragment {
         thinkingText.setPadding(32, 16, 32, 24);
         thinkingText.setBackgroundColor(getThinkingBackgroundColor());
         thinkingText.setVisibility(View.VISIBLE);
-        
+
         final boolean[] isExpanded = {true};
         headerLayout.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -3193,173 +3377,191 @@ public class ChatFragment extends Fragment {
                 }
             }
         });
-        
+
         thinkingContainer.addView(headerLayout);
         thinkingContainer.addView(thinkingText);
-        
+
         chatMessagesContainer.addView(thinkingContainer);
         scrollToBottom();
     }
-    
+
     private void toggleVoiceMode() {
-        
+
         toggleChatVoiceMode();
     }
-    
+
     private void toggleChatVoiceMode() {
         if (!checkAudioPermission()) {
             requestAudioPermission();
             return;
         }
-        
+
         isChatVoiceMode = !isChatVoiceMode;
         updateChatVoiceUI();
-        
+
         if (isChatVoiceMode) {
             startVoiceRecognition(true);
         } else {
             stopVoiceRecognition();
         }
     }
-    
+
     private void updateVoiceUI() {
-        
+
     }
-    
+
     private void updateChatVoiceUI() {
         if (isChatVoiceMode) {
-            
+
             chatInputEditText.setVisibility(View.GONE);
             chatVoiceHintText.setVisibility(View.VISIBLE);
             chatClearButton.setVisibility(View.GONE);
             chatVoiceButton.setImageResource(android.R.drawable.ic_menu_edit);
             chatVoiceButton.setContentDescription("文字输入");
         } else {
-            
+
             chatInputEditText.setVisibility(View.VISIBLE);
             chatVoiceHintText.setVisibility(View.GONE);
             chatVoiceButton.setImageResource(android.R.drawable.ic_btn_speak_now);
             chatVoiceButton.setContentDescription("སྐད་སྒྲ་འཇུག་པ།");
-            
+
             boolean hasText = chatInputEditText.getText().length() > 0;
             chatClearButton.setVisibility(hasText ? View.VISIBLE : View.GONE);
         }
     }
-    
+
     private boolean checkAudioPermission() {
-        return ContextCompat.checkSelfPermission(getContext(), Manifest.permission.RECORD_AUDIO) 
+        return ContextCompat.checkSelfPermission(getContext(), Manifest.permission.RECORD_AUDIO)
                 == PackageManager.PERMISSION_GRANTED;
     }
-    
+
     private void requestAudioPermission() {
-        ActivityCompat.requestPermissions(getActivity(), 
-                new String[]{Manifest.permission.RECORD_AUDIO}, 
+        ActivityCompat.requestPermissions(getActivity(),
+                new String[]{Manifest.permission.RECORD_AUDIO},
                 REQUEST_RECORD_AUDIO_PERMISSION);
     }
-    
+
     private void startVoiceRecognition(boolean isChatMode) {
         if (speechRecognizer != null) {
             speechRecognizer.destroy();
         }
-        
+
         speechRecognizer = SpeechRecognizer.createSpeechRecognizer(getContext());
         speechRecognizer.setRecognitionListener(new VoiceRecognitionListener(isChatMode));
-        
+
         Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "bo-CN"); 
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "bo-CN");
         intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true);
         intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1);
-        
+
         speechRecognizer.startListening(intent);
-        
+
         if (isChatMode) {
             chatVoiceHintText.setText("གསུང་བཞིན་པ...");
         } else {
-        
+
         }
     }
-    
+
     private void stopVoiceRecognition() {
         if (speechRecognizer != null) {
             speechRecognizer.stopListening();
             speechRecognizer.destroy();
             speechRecognizer = null;
         }
-        
+
         if (isChatVoiceMode) {
             chatVoiceHintText.setText("མནན་ནས་གསུང་རོགས།");
         }
         if (isVoiceMode) {
-        
+
         }
     }
-    
+
+    @Override
+    public void onHttpSuccess(@NonNull Object result) {
+
+    }
+
+    @Override
+    public void onHttpFail(@NonNull Throwable throwable) {
+
+    }
+
     private class VoiceRecognitionListener implements android.speech.RecognitionListener {
         private boolean isChatMode;
-        
+
         public VoiceRecognitionListener(boolean isChatMode) {
             this.isChatMode = isChatMode;
         }
-        
+
         @Override
-        public void onReadyForSpeech(Bundle params) {}
-        
+        public void onReadyForSpeech(Bundle params) {
+        }
+
         @Override
-        public void onBeginningOfSpeech() {}
-        
+        public void onBeginningOfSpeech() {
+        }
+
         @Override
         public void onRmsChanged(float rmsdB) {
-            
+
         }
-        
+
         @Override
-        public void onBufferReceived(byte[] buffer) {}
-        
+        public void onBufferReceived(byte[] buffer) {
+        }
+
         @Override
-        public void onEndOfSpeech() {}
-        
+        public void onEndOfSpeech() {
+        }
+
         @Override
-        public void onError(int error) {String errorMessage = getErrorMessage(error);
+        public void onError(int error) {
+            String errorMessage = getErrorMessage(error);
             Toast.makeText(getContext(), errorMessage, Toast.LENGTH_SHORT).show();
-            
+
             if (isChatMode) {
                 isChatVoiceMode = false;
                 updateChatVoiceUI();
             } else {
-                
+
                 isVoiceMode = false;
-                
+
             }
         }
-        
+
         @Override
         public void onResults(Bundle results) {
             ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
             if (matches != null && !matches.isEmpty()) {
-                String recognizedText = matches.get(0);if (isChatMode) {
+                String recognizedText = matches.get(0);
+                if (isChatMode) {
                     chatInputEditText.setText(recognizedText);
                     isChatVoiceMode = false;
                     updateChatVoiceUI();
                 } else {
-                    
+
                     chatInputEditText.setText(recognizedText);
                     isVoiceMode = false;
-                    
+
                 }
             }
         }
-        
+
         @Override
         public void onPartialResults(Bundle partialResults) {
             ArrayList<String> matches = partialResults.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
             if (matches != null && !matches.isEmpty()) {
-                String partialText = matches.get(0);}
+                String partialText = matches.get(0);
+            }
         }
-        
+
         @Override
-        public void onEvent(int eventType, Bundle params) {}
-        
+        public void onEvent(int eventType, Bundle params) {
+        }
+
         private String getErrorMessage(int error) {
             switch (error) {
                 case SpeechRecognizer.ERROR_AUDIO:
@@ -3385,7 +3587,7 @@ public class ChatFragment extends Fragment {
             }
         }
     }
-    
+
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -3399,27 +3601,27 @@ public class ChatFragment extends Fragment {
             realtimeTtsManager.release();
         }
     }
-    
+
     private void setupKeyboardDismissal(View view) {
-        
+
         if (view instanceof ViewGroup) {
             view.setOnTouchListener(new View.OnTouchListener() {
                 @Override
                 public boolean onTouch(View v, MotionEvent event) {
                     if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                        
+
                         hideKeyboard();
                     }
                     return false;
                 }
             });
         }
-        
+
         if (chatScrollView != null) {
             chatScrollView.setOnTouchListener(new View.OnTouchListener() {
                 private float lastY = 0;
                 private boolean hasMoved = false;
-                
+
                 @Override
                 public boolean onTouch(View v, MotionEvent event) {
                     switch (event.getAction()) {
@@ -3433,7 +3635,7 @@ public class ChatFragment extends Fragment {
                                 scrollResetHandler.removeCallbacks(scrollResetRunnable);
                             }
                             break;
-                            
+
                         case MotionEvent.ACTION_MOVE:
                             // 问题3优化：检测是否真的在滚动（移动超过阈值）
                             float deltaY = Math.abs(event.getRawY() - lastY);
@@ -3445,7 +3647,7 @@ public class ChatFragment extends Fragment {
                                 }
                             }
                             break;
-                            
+
                         case MotionEvent.ACTION_UP:
                         case MotionEvent.ACTION_CANCEL:
                             // 问题3优化：只有真正滚动过才需要延迟重置
@@ -3467,37 +3669,37 @@ public class ChatFragment extends Fragment {
             });
         }
     }
-    
+
     private void hideKeyboard() {
         if (getActivity() != null && getView() != null) {
-            android.view.inputmethod.InputMethodManager imm = 
-                (android.view.inputmethod.InputMethodManager) getActivity().getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
+            android.view.inputmethod.InputMethodManager imm =
+                    (android.view.inputmethod.InputMethodManager) getActivity().getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
             if (imm != null) {
                 imm.hideSoftInputFromWindow(getView().getWindowToken(), 0);
             }
         }
     }
-    
+
     private void switchToVoiceMode() {
         isVoiceMode = true;
-        
+
         // 隐藏文本输入框
         if (chatInputEditText != null) {
             chatInputEditText.setVisibility(View.GONE);
         }
-        
+
         // 隐藏框内按钮容器（清除和语音按钮）
         if (textModeButtonsContainer != null) {
             textModeButtonsContainer.setVisibility(View.GONE);
         }
-        
+
         // 显示按住说话按钮
         if (voiceTalkButton != null) {
             voiceTalkButton.setVisibility(View.VISIBLE);
             voiceTalkButton.setBackgroundResource(R.drawable.voice_talk_button_normal);  // 使用圆角背景
             voiceTalkButton.setTextColor(0xFF000000);  // 黑色文字
         }
-        
+
         // 切换左侧按钮：隐藏喇叭，显示键盘
         if (leftVoiceToggleButton != null) {
             leftVoiceToggleButton.setVisibility(View.GONE);
@@ -3506,26 +3708,26 @@ public class ChatFragment extends Fragment {
             leftKeyboardButton.setVisibility(View.VISIBLE);
         }
     }
-    
+
     private void switchToTextMode() {
         isVoiceMode = false;
-        
+
         // 显示文本输入框
         if (chatInputEditText != null) {
             chatInputEditText.setVisibility(View.VISIBLE);
         }
-        
+
         // 显示框内按钮容器（清除和语音按钮）
         if (textModeButtonsContainer != null) {
             textModeButtonsContainer.setVisibility(View.VISIBLE);
         }
         updateClearButtonVisibility();
-        
+
         // 隐藏按住说话按钮
         if (voiceTalkButton != null) {
             voiceTalkButton.setVisibility(View.GONE);
         }
-        
+
         // 切换左侧按钮：显示喇叭，隐藏键盘
         if (leftVoiceToggleButton != null) {
             leftVoiceToggleButton.setVisibility(View.VISIBLE);
@@ -3534,15 +3736,15 @@ public class ChatFragment extends Fragment {
             leftKeyboardButton.setVisibility(View.GONE);
         }
     }
-    
+
     private void updateVoiceButtonState(boolean isRecording) {
         if (voiceTalkButton == null) return;
-        
+
         String language = getArguments() != null ? getArguments().getString("language") : LanguageManager.LANGUAGE_TIBETAN;
         if (language == null) {
             language = LanguageManager.getInstance(getContext()).getLanguage();
         }
-        
+
         String pressText, recordingText;
         switch (language) {
             case LanguageManager.LANGUAGE_CHINESE:
@@ -3559,7 +3761,7 @@ public class ChatFragment extends Fragment {
                 recordingText = "གསུང་བཞིན་པ...";
                 break;
         }
-        
+
         if (isRecording) {
             voiceTalkButton.setText(recordingText);
             voiceTalkButton.setBackgroundResource(R.drawable.voice_talk_button_recording);  // 录音时：深绿色圆角
@@ -3570,9 +3772,9 @@ public class ChatFragment extends Fragment {
             voiceTalkButton.setTextColor(0xFF000000);  // 黑色文字
         }
     }
-    
+
     private boolean checkRecordPermission() {
-        if (ContextCompat.checkSelfPermission(getContext(), 
+        if (ContextCompat.checkSelfPermission(getContext(),
                 Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(getActivity(),
                     new String[]{Manifest.permission.RECORD_AUDIO},
@@ -3581,12 +3783,12 @@ public class ChatFragment extends Fragment {
         }
         return true;
     }
-    
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        
+
         if (requestCode == REQUEST_RECORD_AUDIO_PERMISSION) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 safeShowToast("麦克风权限已授予");
@@ -3596,15 +3798,15 @@ public class ChatFragment extends Fragment {
             }
         }
     }
-    
+
     private void updateClearButtonVisibility() {
         if (chatClearButton != null && chatInputEditText != null) {
             chatClearButton.setVisibility(
-                chatInputEditText.getText().length() > 0 ? View.VISIBLE : View.GONE
+                    chatInputEditText.getText().length() > 0 ? View.VISIBLE : View.GONE
             );
         }
     }
-    
+
     /**
      * 将Markdown格式文本转换为纯文本
      * 移除所有Markdown格式标记，保留纯文本内容
@@ -3613,50 +3815,50 @@ public class ChatFragment extends Fragment {
         if (markdown == null || markdown.isEmpty()) {
             return "";
         }
-        
+
         String text = markdown;
-        
+
         // 移除代码块 ```code```
         text = text.replaceAll("```[\\s\\S]*?```", "");
-        
+
         // 移除行内代码 `code`
         text = text.replaceAll("`([^`]+)`", "$1");
-        
+
         // 移除标题标记 # ## ###
         text = text.replaceAll("(?m)^#{1,6}\\s+", "");
-        
+
         // 移除粗体 **text** 或 __text__
         text = text.replaceAll("\\*\\*([^*]+)\\*\\*", "$1");
         text = text.replaceAll("__([^_]+)__", "$1");
-        
+
         // 移除斜体 *text* 或 _text_
         text = text.replaceAll("\\*([^*]+)\\*", "$1");
         text = text.replaceAll("_([^_]+)_", "$1");
-        
+
         // 移除链接，保留链接文本 [text](url) -> text
         text = text.replaceAll("\\[([^\\]]+)\\]\\([^)]+\\)", "$1");
-        
+
         // 移除图片 ![alt](url)
         text = text.replaceAll("!\\[([^\\]]*)\\]\\([^)]+\\)", "");
-        
+
         // 移除无序列表标记 - * +
         text = text.replaceAll("(?m)^[\\s]*[-*+]\\s+", "");
-        
+
         // 移除有序列表标记 1. 2. 3.
         text = text.replaceAll("(?m)^[\\s]*\\d+\\.\\s+", "");
-        
+
         // 移除引用标记 >
         text = text.replaceAll("(?m)^>\\s+", "");
-        
+
         // 移除水平线 --- *** ___
         text = text.replaceAll("(?m)^[-*_]{3,}$", "");
-        
+
         // 移除多余的空行（保留单个换行）
         text = text.replaceAll("\n{3,}", "\n\n");
-        
+
         return text.trim();
     }
-    
+
     /**
      * 更新自动播报按钮图标
      */
@@ -3664,7 +3866,7 @@ public class ChatFragment extends Fragment {
         if (audioButton == null) {
             return;
         }
-        
+
         if (isAutoPlayEnabled) {
             // 开启状态：显示带声波的喇叭
             audioButton.setImageResource(R.drawable.ic_volume_on);
@@ -3673,7 +3875,7 @@ public class ChatFragment extends Fragment {
             audioButton.setImageResource(R.drawable.ic_volume_off);
         }
     }
-    
+
     /**
      * 显示语音波形弹窗
      */
@@ -3681,16 +3883,16 @@ public class ChatFragment extends Fragment {
         if (voicePopup != null && voicePopup.isShowing()) {
             return;
         }
-        
+
         try {
             View dialogView = LayoutInflater.from(getContext())
-                .inflate(R.layout.dialog_voice_waveform, null);
-            
+                    .inflate(R.layout.dialog_voice_waveform, null);
+
             waveformView = dialogView.findViewById(R.id.waveformView);
             volumeText = dialogView.findViewById(R.id.volumeText);
             cancelHintBox = dialogView.findViewById(R.id.cancelHintBox);  // 获取取消提示框
             TextView hintText = dialogView.findViewById(R.id.voiceHintText);
-            
+
             // 根据当前语言设置提示文本
             String language = LanguageManager.getInstance(getContext()).getLanguage();
             switch (language) {
@@ -3707,43 +3909,43 @@ public class ChatFragment extends Fragment {
                     cancelHintBox.setText("ཕྱིར་འཐེན།");
                     break;
             }
-            
+
             // 创建PopupWindow（精确控制位置，无闪烁）
             voicePopup = new android.widget.PopupWindow(
-                dialogView,
-                android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
-                android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
-                false
+                    dialogView,
+                    android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
+                    android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
+                    false
             );
-            
+
             // 设置背景（必须设置才能正常显示）
             voicePopup.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT));
-            
+
             // 计算底部边距
             int marginBottomPx = (int) (120 * getResources().getDisplayMetrics().density);
-            
+
             // 在父视图底部显示（直接出现在底部，无闪烁）
             View parentView = getView();
             if (parentView != null) {
                 voicePopup.showAtLocation(
-                    parentView,
-                    android.view.Gravity.BOTTOM | android.view.Gravity.CENTER_HORIZONTAL,
-                    0,
-                    marginBottomPx
+                        parentView,
+                        android.view.Gravity.BOTTOM | android.view.Gravity.CENTER_HORIZONTAL,
+                        0,
+                        marginBottomPx
                 );
             }
-            
+
             // 启动波形动画
             if (waveformView != null) {
                 waveformView.startAnimation();
             }
-            
+
             Log.d("ChatFragment", "✅ 语音波形弹窗已显示（PopupWindow）");
         } catch (Exception e) {
             Log.e("ChatFragment", "❌ 显示语音波形弹窗失败", e);
         }
     }
-    
+
     /**
      * 关闭语音波形弹窗
      */
@@ -3753,47 +3955,64 @@ public class ChatFragment extends Fragment {
                 waveformView.stopAnimation();
                 waveformView.reset();
             }
-            
+
             if (voicePopup != null && voicePopup.isShowing()) {
                 voicePopup.dismiss();
             }
-            
+
             waveformView = null;
             volumeText = null;
             cancelHintBox = null;  // 清理取消提示框引用
-            
+
             Log.d("ChatFragment", "✅ 语音波形弹窗已关闭");
         } catch (Exception e) {
             Log.e("ChatFragment", "❌ 关闭语音波形弹窗失败", e);
         }
     }
-    
+
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        
+
         // 停止TTS播放
         if (ttsManager != null) {
             ttsManager.stop();
             ttsManager.release();
             ttsManager = null;
         }
-        
+
         // 重置播放按钮状态
         if (currentPlayingButton != null) {
             currentPlayingButton.setImageResource(R.drawable.ic_play);
             currentPlayingButton = null;
         }
-        
+
         if (audioButton != null) {
             updateAutoPlayButtonIcon();
         }
-        
+
         // 清理资源
         dismissVoiceWaveformDialog();
-        
+
         if (speechManager != null) {
             speechManager.release();
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK && requestCode == REQUEST_ALBUM && data != null) {
+            // 获取选中图片的 URI
+            if (resultCode == RESULT_OK && requestCode == 1001 && data != null) {
+                Uri imageUri = data.getData();
+
+                // 直接转 Base64
+                imageBase64 = Base64Util.uriToCompressedBase64(getActivity(), imageUri);
+                sendChatMessage();
+                // 这里就可以上传 base64 了
+                // uploadBase64(base64);
+            }
         }
     }
 }

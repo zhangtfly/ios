@@ -573,7 +573,19 @@
                 android:layout_marginEnd="16dp"
                 android:minWidth="0dp"
                 android:minHeight="0dp" />
-
+            <com.hjq.shape.view.ShapeTextView
+                android:id="@+id/save_img"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:text="Upload"
+                app:shape_solidColor="@color/white"
+                app:shape_strokeColor="#BBBBBB"
+                app:shape_strokeSize="1dp"
+                app:shape_radius="20dp"
+                android:paddingHorizontal="12dp"
+                android:layout_gravity="center_vertical"
+                android:gravity="center_vertical"
+                android:textSize="14dp"/>
             <!-- Internet button - Hidden -->
             <ToggleButton
                 android:id="@+id/internetToggle"
@@ -667,13 +679,15 @@
                 android:gravity="center_vertical"
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
+                android:layout_gravity="center_vertical"
                 android:background="?android:attr/selectableItemBackground"
                 android:clickable="true"
                 android:focusable="true">
                 <TextView android:layout_width="24dp" android:layout_height="24dp" android:text="💬" android:textSize="20sp" android:gravity="center" />
                 <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Chat History" android:textSize="16sp" android:textColor="?android:attr/textColorPrimary" android:layout_marginStart="16dp" />
             </LinearLayout>
-            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#E0E0E0" android:layout_marginStart="56dp" />
+            <View android:layout_width="match_parent"
+                android:visibility="gone" android:layout_height="1dp" android:background="#E0E0E0" android:layout_marginStart="56dp" />
 
             <LinearLayout
                 android:id="@+id/menuSettings"
@@ -685,11 +699,13 @@
                 android:paddingEnd="16dp"
                 android:background="?android:attr/selectableItemBackground"
                 android:clickable="true"
+                android:visibility="gone"
                 android:focusable="true">
                 <TextView android:layout_width="24dp" android:layout_height="24dp" android:text="⚙️" android:textSize="20sp" android:gravity="center" />
                 <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Settings" android:textSize="16sp" android:textColor="?android:attr/textColorPrimary" android:layout_marginStart="16dp" />
             </LinearLayout>
-            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#E0E0E0" android:layout_marginStart="56dp" />
+            <View android:layout_width="match_parent"
+                android:visibility="gone" android:layout_height="1dp" android:background="#E0E0E0" android:layout_marginStart="56dp" />
 
             <LinearLayout
                 android:id="@+id/menuLanguage"
@@ -701,11 +717,13 @@
                 android:paddingEnd="16dp"
                 android:background="?android:attr/selectableItemBackground"
                 android:clickable="true"
+                android:visibility="gone"
                 android:focusable="true">
                 <TextView android:layout_width="24dp" android:layout_height="24dp" android:text="🌐" android:textSize="20sp" android:gravity="center" />
                 <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Language" android:textSize="16sp" android:textColor="?android:attr/textColorPrimary" android:layout_marginStart="16dp" />
             </LinearLayout>
-            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#E0E0E0" android:layout_marginStart="56dp" />
+            <View android:layout_width="match_parent"
+                android:visibility="gone" android:layout_height="1dp" android:background="#E0E0E0" android:layout_marginStart="56dp" />
 
             <LinearLayout
                 android:id="@+id/menuUpgrade"
@@ -717,11 +735,13 @@
                 android:paddingEnd="16dp"
                 android:background="?android:attr/selectableItemBackground"
                 android:clickable="true"
+                android:visibility="gone"
                 android:focusable="true">
                 <TextView android:layout_width="24dp" android:layout_height="24dp" android:text="⬆️" android:textSize="20sp" android:gravity="center" />
                 <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Upgrade Plan" android:textSize="16sp" android:textColor="?android:attr/textColorPrimary" android:layout_marginStart="16dp" />
             </LinearLayout>
-            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#E0E0E0" android:layout_marginStart="56dp" />
+            <View android:layout_width="match_parent"
+                android:visibility="gone" android:layout_height="1dp" android:background="#E0E0E0" android:layout_marginStart="56dp" />
 
             <LinearLayout
                 android:id="@+id/menuLearnMore"
@@ -733,11 +753,13 @@
                 android:paddingEnd="16dp"
                 android:background="?android:attr/selectableItemBackground"
                 android:clickable="true"
+                android:visibility="gone"
                 android:focusable="true">
                 <TextView android:layout_width="24dp" android:layout_height="24dp" android:text="ℹ️" android:textSize="20sp" android:gravity="center" />
                 <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Learn More" android:textSize="16sp" android:textColor="?android:attr/textColorPrimary" android:layout_marginStart="16dp" />
             </LinearLayout>
-            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#E0E0E0" android:layout_marginStart="56dp" />
+            <View android:layout_width="match_parent"
+                android:visibility="gone" android:layout_height="1dp" android:background="#E0E0E0" android:layout_marginStart="56dp" />
 
             <LinearLayout
                 android:id="@+id/menuHelp"
@@ -749,11 +771,13 @@
                 android:paddingEnd="16dp"
                 android:background="?android:attr/selectableItemBackground"
                 android:clickable="true"
+                android:visibility="gone"
                 android:focusable="true">
                 <TextView android:layout_width="24dp" android:layout_height="24dp" android:text="❓" android:textSize="20sp" android:gravity="center" />
                 <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Get Help" android:textSize="16sp" android:textColor="?android:attr/textColorPrimary" android:layout_marginStart="16dp" />
             </LinearLayout>
-            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#E0E0E0" android:layout_marginStart="56dp" />
+            <View android:layout_width="match_parent"
+                android:visibility="gone" android:layout_height="1dp" android:background="#E0E0E0" android:layout_marginStart="56dp" />
 
             <LinearLayout
                 android:id="@+id/menuLogout"
