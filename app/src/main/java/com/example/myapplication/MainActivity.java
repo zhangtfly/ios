@@ -30,7 +30,8 @@ public class MainActivity extends BaseActivity implements LanguageManager.OnLang
             new com.example.myapplication.utils.TokenManager(this);
         if (!tokenManager.isLoggedIn()) {
             Intent intent = new Intent(this, LoginV2Activity.class);
-            startActivityForResult(intent, LOGIN_REQUEST_CODE);
+            startActivity(intent);
+            finish();
             return;
         }
 

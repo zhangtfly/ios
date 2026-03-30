@@ -1016,6 +1016,7 @@ public class ChatFragment extends Fragment implements OnHttpListener {
     private void showLoginDialog() {
         Intent intent = new Intent(getActivity(), LoginV2Activity.class);
         startActivity(intent);
+        getActivity().finish();
     }
 
     @Override
@@ -1043,6 +1044,7 @@ public class ChatFragment extends Fragment implements OnHttpListener {
                         Intent intent = new Intent(getActivity(), LoginV2Activity.class);
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         startActivity(intent);
+                        getActivity().finish();
                     }
                 })
                 .setNegativeButton("取消", null)
@@ -1890,8 +1892,9 @@ public class ChatFragment extends Fragment implements OnHttpListener {
                                     /*删除token*/
                                     EasyConfig.getInstance().removeHeader("Authorization");
                                     Intent intent = new Intent(getActivity(), LoginV2Activity.class);
-                                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                                     getActivity().startActivity(intent);
+                                    getActivity().finish();
                                 }
 
                             } else {

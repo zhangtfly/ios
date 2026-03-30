@@ -16,6 +16,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.example.myapplication.LanguageManager;
+import com.example.myapplication.MainActivity;
 import com.example.myapplication.R;
 import com.example.myapplication.ThemeManager;
 import com.example.myapplication.base.BaseActivity;
@@ -260,8 +261,7 @@ public class LoginV2Activity extends BaseActivity {
                                     null
                             );
                         }
-                        setResult(RESULT_OK);
-                        finish();
+                        startMain();
                     }
                 });
     }
@@ -330,8 +330,7 @@ public class LoginV2Activity extends BaseActivity {
                                     null
                             );
                         }
-                        setResult(RESULT_OK);
-                        finish();
+                        startMain();
                     }
                 });
     }
@@ -452,8 +451,7 @@ public class LoginV2Activity extends BaseActivity {
                                         password
                                 );
                             }
-                            setResult(RESULT_OK);
-                            finish();
+                            startMain();
                         }
                     });
         }else {
@@ -478,13 +476,17 @@ public class LoginV2Activity extends BaseActivity {
                                         null
                                 );
                             }
-                            setResult(RESULT_OK);
-                            finish();
+                            startMain();
                         }
                     });
         }
     }
 
+    private void startMain(){
+        Intent intent =new Intent(this, MainActivity.class);
+        startActivity(intent);
+        finish();
+    }
     // 获取验证码
     private void requestCode(CountdownView view) {
         String phone = Objects.requireNonNull(edPhone.getText()).toString().trim();

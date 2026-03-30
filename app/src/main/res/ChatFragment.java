@@ -882,6 +882,7 @@ public class ChatFragment extends Fragment {
     private void showLoginDialog() {
         Intent intent = new Intent(getActivity(), LoginV2Activity.class);
         startActivity(intent);
+        getActivity().finish();
     }
     
     @Override

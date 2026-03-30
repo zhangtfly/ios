@@ -151,7 +151,7 @@ public final class RequestHandler implements IRequestHandler {
                 /*删除token*/
                 EasyConfig.getInstance().removeHeader("Authorization");
                 Intent intent = new Intent(mApplication, LoginV2Activity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                 mApplication.startActivity(intent);
             }
             return e;
