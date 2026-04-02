@@ -1,5 +1,5 @@
 package com.example.myapplication.http;
 
 public class BaseUrl {
-    public static String BaseUrl = "https://derisively-nonchargeable-lailah.ngrok-free.dev/";
+    public static String BaseUrl = "https://1gh08qu403649.vicp.fun/";
 }

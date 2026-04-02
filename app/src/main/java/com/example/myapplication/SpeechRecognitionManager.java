@@ -40,7 +40,7 @@ public class SpeechRecognitionManager implements OnHttpListener {
     private static final String TAG = "SpeechRecognition";
 
     // WebSocket URL
-    private static final String WSS_URL = "wss://derisively-nonchargeable-lailah.ngrok-free.dev/api/ws/asr";
+    private static final String WSS_URL = "wss://1gh08qu403649.vicp.fun/api/ws/asr";
     private LifecycleOwner lifecycleOwner;
     private static final String LANG_TYPE = "bo-CN";
 
