@@ -116,6 +116,7 @@
             android:stateListAnimator="@null"
             android:elevation="0dp"
             android:gravity="center"
+            android:textAllCaps="false"
             style="@style/Widget.AppCompat.Button.Borderless" />
 
     </LinearLayout>
@@ -200,7 +201,7 @@
             <androidx.cardview.widget.CardView
                 android:id="@+id/smartQAButton"
                 android:layout_width="0dp"
-                android:layout_height="100dp"
+                android:layout_height="120dp"
                 android:layout_row="0"
                 android:layout_column="0"
                 android:layout_columnWeight="1"
@@ -227,8 +228,7 @@
                         android:layout_weight="1"
                         android:text="Please write a study reflection on the 15th Five Year Plan."
                         android:textSize="15sp"
-                        android:textColor="#333333"
-                        android:lineSpacingExtra="2dp" />
+                        android:textColor="#333333" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -245,7 +245,7 @@
             <androidx.cardview.widget.CardView
                 android:id="@+id/smartTranslateButton"
                 android:layout_width="0dp"
-                android:layout_height="100dp"
+                android:layout_height="120dp"
                 android:layout_row="0"
                 android:layout_column="1"
                 android:layout_columnWeight="1"
@@ -272,8 +272,7 @@
                         android:layout_weight="1"
                         android:text="Write a poem praising the teacher."
                         android:textSize="15sp"
-                        android:textColor="#333333"
-                        android:lineSpacingExtra="2dp" />
+                        android:textColor="#333333" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -290,7 +289,7 @@
             <androidx.cardview.widget.CardView
                 android:id="@+id/semanticButton"
                 android:layout_width="0dp"
-                android:layout_height="100dp"
+                android:layout_height="120dp"
                 android:layout_row="1"
                 android:layout_column="0"
                 android:layout_columnWeight="1"
@@ -317,8 +316,7 @@
                         android:layout_weight="1"
                         android:text="Please write a graduation ceremony speech for the principal."
                         android:textSize="15sp"
-                        android:textColor="#333333"
-                        android:lineSpacingExtra="2dp" />
+                        android:textColor="#333333" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -335,7 +333,7 @@
             <androidx.cardview.widget.CardView
                 android:id="@+id/fourthButton"
                 android:layout_width="0dp"
-                android:layout_height="100dp"
+                android:layout_height="120dp"
                 android:layout_row="1"
                 android:layout_column="1"
                 android:layout_columnWeight="1"
@@ -362,8 +360,7 @@
                         android:layout_weight="1"
                         android:text="What is the necessity of studying medicine?"
                         android:textSize="15sp"
-                        android:textColor="#333333"
-                        android:lineSpacingExtra="2dp" />
+                        android:textColor="#333333" />
 
                     <TextView
                         android:layout_width="wrap_content"

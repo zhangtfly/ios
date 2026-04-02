@@ -201,7 +201,7 @@
             <androidx.cardview.widget.CardView
                 android:id="@+id/smartQAButton"
                 android:layout_width="0dp"
-                android:layout_height="100dp"
+                android:layout_height="120dp"
                 android:layout_row="0"
                 android:layout_column="0"
                 android:layout_columnWeight="1"
@@ -245,7 +245,7 @@
             <androidx.cardview.widget.CardView
                 android:id="@+id/smartTranslateButton"
                 android:layout_width="0dp"
-                android:layout_height="100dp"
+                android:layout_height="120dp"
                 android:layout_row="0"
                 android:layout_column="1"
                 android:layout_columnWeight="1"
@@ -289,7 +289,7 @@
             <androidx.cardview.widget.CardView
                 android:id="@+id/semanticButton"
                 android:layout_width="0dp"
-                android:layout_height="100dp"
+                android:layout_height="120dp"
                 android:layout_row="1"
                 android:layout_column="0"
                 android:layout_columnWeight="1"
@@ -333,7 +333,7 @@
             <androidx.cardview.widget.CardView
                 android:id="@+id/fourthButton"
                 android:layout_width="0dp"
-                android:layout_height="100dp"
+                android:layout_height="120dp"
                 android:layout_row="1"
                 android:layout_column="1"
                 android:layout_columnWeight="1"

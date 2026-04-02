@@ -203,7 +203,7 @@
             <androidx.cardview.widget.CardView
                 android:id="@+id/smartQAButton"
                 android:layout_width="0dp"
-                android:layout_height="100dp"
+                android:layout_height="120dp"
                 android:layout_row="0"
                 android:layout_column="0"
                 android:layout_columnWeight="1"
@@ -230,8 +230,7 @@
                         android:layout_weight="1"
                         android:text="ལོ་ལྔའི་འཆར་འགོད་བཅོ་ལྔ།བར་སློབ་སྦྱོང་བྱས་པའི་མྱོང་ཚོར་ཞིག་བྲིས་རོགས།"
                         android:textSize="15sp"
-                        android:textColor="#333333"
-                        android:lineSpacingExtra="2dp" />
+                        android:textColor="#333333" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -248,7 +247,7 @@
             <androidx.cardview.widget.CardView
                 android:id="@+id/smartTranslateButton"
                 android:layout_width="0dp"
-                android:layout_height="100dp"
+                android:layout_height="120dp"
                 android:layout_row="0"
                 android:layout_column="1"
                 android:layout_columnWeight="1"
@@ -275,8 +274,7 @@
                         android:layout_weight="1"
                         android:text="དགེ་རྒན་ལ་བསྟོད་པའི་སྙན་ངག་ཅིག་བྲིས་རོགས།"
                         android:textSize="15sp"
-                        android:textColor="#333333"
-                        android:lineSpacingExtra="2dp" />
+                        android:textColor="#333333" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -293,7 +291,7 @@
             <androidx.cardview.widget.CardView
                 android:id="@+id/semanticButton"
                 android:layout_width="0dp"
-                android:layout_height="100dp"
+                android:layout_height="120dp"
                 android:layout_row="1"
                 android:layout_column="0"
                 android:layout_columnWeight="1"
@@ -320,8 +318,7 @@
                         android:layout_weight="1"
                         android:text="སློབ་གཙོ་ལ་སློབ་ཐོན་མཛད་སྒོའི་ཐོག་གི་གཏམ་བཤད་ཤིག་བྲིས་རོགས།"
                         android:textSize="15sp"
-                        android:textColor="#333333"
-                        android:lineSpacingExtra="2dp" />
+                        android:textColor="#333333" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -338,7 +335,7 @@
             <androidx.cardview.widget.CardView
                 android:id="@+id/fourthButton"
                 android:layout_width="0dp"
-                android:layout_height="100dp"
+                android:layout_height="120dp"
                 android:layout_row="1"
                 android:layout_column="1"
                 android:layout_columnWeight="1"
@@ -365,8 +362,7 @@
                         android:layout_weight="1"
                         android:text="གསོ་བ་རིག་པ་བསླབ་པའི་དགོས་པ་ཅི་ཡིན།"
                         android:textSize="15sp"
-                        android:textColor="#333333"
-                        android:lineSpacingExtra="2dp" />
+                        android:textColor="#333333" />
 
                     <TextView
                         android:layout_width="wrap_content"
