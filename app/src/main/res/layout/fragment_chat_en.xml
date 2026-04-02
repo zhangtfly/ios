@@ -127,7 +127,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/topBar"
-        android:layout_marginStart="24dp"
+        android:layout_marginHorizontal="12dp"
         android:layout_marginTop="8dp"
         android:text="Hi, where to start today?"
         android:textSize="30sp"
@@ -184,8 +184,8 @@
         android:layout_below="@id/greetingText"
         android:layout_above="@id/chatInputContainer"
         android:layout_marginTop="24dp"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
         android:paddingBottom="16dp"
         android:fillViewport="true">
 
