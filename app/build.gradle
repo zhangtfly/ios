@@ -14,7 +14,14 @@ android {
         versionName "1.2"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        
+
+    }
+
+    // 设置APK输出文件名
+    applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            outputFileName = "cn.edu.utibet.sunshineglm.apk"
+        }
     }
 
     buildTypes {

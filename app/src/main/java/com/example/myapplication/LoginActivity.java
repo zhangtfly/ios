@@ -156,9 +156,9 @@ public class LoginActivity extends AppCompatActivity {
                 // Update hint for account login
                 String currentLang = LanguageManager.getInstance(this).getLanguage();
                 if (LanguageManager.LANGUAGE_CHINESE.equals(currentLang)) {
-                    etAccount.setHint("请输入用户名");
+                    etAccount.setHint("请输入手机号");
                 } else if (LanguageManager.LANGUAGE_ENGLISH.equals(currentLang)) {
-                    etAccount.setHint("Enter username");
+                    etAccount.setHint("Enter Phone");
                 } else {
                     etAccount.setHint("སྤྱོད་མཁན་གྱི་མིང་འཇུག་རོགས");
                 }
@@ -227,9 +227,9 @@ public class LoginActivity extends AppCompatActivity {
         if (TextUtils.isEmpty(account)) {
             String currentLang = LanguageManager.getInstance(this).getLanguage();
             if (LanguageManager.LANGUAGE_CHINESE.equals(currentLang)) {
-                Toast.makeText(this, "请输入用户名", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "请输入手机号", Toast.LENGTH_SHORT).show();
             } else if (LanguageManager.LANGUAGE_ENGLISH.equals(currentLang)) {
-                Toast.makeText(this, "Please enter username", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Please enter Phone", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(this, getString(R.string.hint_account), Toast.LENGTH_SHORT).show();
             }

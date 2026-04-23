@@ -32,7 +32,7 @@
     <string name="login_subtitle_zh">藏语大模型</string>
     <string name="account_login_zh">账号登录</string>
     <string name="verification_login_zh">验证码登录</string>
-    <string name="username_zh">用户名</string>
+    <string name="username_zh">手机号</string>
     <string name="password_zh">密码</string>
     <string name="remember_me_zh">记住我</string>
     <string name="forgot_password_zh">忘记密码？</string>
@@ -46,7 +46,7 @@
     <string name="login_subtitle_en">Tibetan AI Model</string>
     <string name="account_login_en">Account</string>
     <string name="verification_login_en">Verification</string>
-    <string name="username_en">Username</string>
+    <string name="username_en">Phone</string>
     <string name="password_en">Password</string>
     <string name="remember_me_en">Remember me</string>
     <string name="forgot_password_en">Forgot password?</string>

@@ -40,7 +40,7 @@
             android:id="@+id/et_user_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Enter username"
+            android:hint="Enter Phone"
             android:inputType="text"
             android:padding="16dp"
             android:background="@drawable/edit_text_background"/>

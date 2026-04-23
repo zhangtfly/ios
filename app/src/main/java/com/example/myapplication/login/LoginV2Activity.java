@@ -374,9 +374,9 @@ public class LoginV2Activity extends BaseActivity {
         if (initLoginPhone) {
             if (TextUtils.isEmpty(account)) {
                 if (LanguageManager.LANGUAGE_CHINESE.equals(language)) {
-                    Toaster.show("请输入用户名");
+                    Toaster.show("请输入手机号");
                 } else if (LanguageManager.LANGUAGE_ENGLISH.equals(language)) {
-                    Toaster.show("Please enter username");
+                    Toaster.show("Please enter Phone");
                 } else {
                     Toaster.show(getString(R.string.hint_account));
                 }
@@ -607,7 +607,7 @@ public class LoginV2Activity extends BaseActivity {
                 tvCode.setText("验证码");
                 edPhone.setHint("请输入手机号");
                 etCode.setHint("请输入验证码");
-                tvAccount.setText("用户名");
+                tvAccount.setText("手机号");
                 tvPassword.setText("密码");
                 rememberMe.setText("记住我");
                 forgetPassword.setText("忘记密码？");
@@ -615,8 +615,8 @@ public class LoginV2Activity extends BaseActivity {
                 visitorLogin.setText("\uD83D\uDC64  游客访问");
                 visitorTip.setText("游客每天可使用5次");
                 loginGetCode.setText("获取验证码");
-                etAccount.setHint("请输入用户名");
-                etPassword.setHint("请输入用密码");
+                etAccount.setHint("请输入手机号");
+                etPassword.setHint("请输入密码");
                 tvOr.setText("或");
                 noAccount.setText("还没有账号？");
                 registerNow.setText("立即注册");
@@ -648,7 +648,7 @@ public class LoginV2Activity extends BaseActivity {
                 tvCode.setText("Verification Code");
                 edPhone.setHint("Enter Phone");
                 etCode.setHint("Enter Verification Code");
-                tvAccount.setText("Username");
+                tvAccount.setText("Phone");
                 tvPassword.setText("Password");
                 rememberMe.setText("Remember me");
                 forgetPassword.setText("Forgot password?");
@@ -656,7 +656,7 @@ public class LoginV2Activity extends BaseActivity {
                 visitorLogin.setText("\uD83D\uDC64  Continue as Guest");
                 visitorTip.setText("Guests can use 5 times per day");
                 loginGetCode.setText("Get Code");
-                etAccount.setHint("Enter username");
+                etAccount.setHint("Enter Phone");
                 etPassword.setHint("Enter Password");
                 tvOr.setText("or");
                 noAccount.setText("Don't have an account?");
@@ -697,7 +697,7 @@ public class LoginV2Activity extends BaseActivity {
                 submitLogin.setText("ཐོ་འཇུག");
                 visitorLogin.setText("\uD83D\uDC64  འགྲུལ་པའི་རྣམ་པ་ནས།");
                 visitorTip.setText("འགྲུལ་པས་ཉིན་རེར་ཐེངས་5བེད་སྤྱོད་བྱེད་ཆོག");
-                loginGetCode.setText("ར་སྤྲོད་ཨང་གྲངས་བསྡུ་ལེན།");
+                loginGetCode.setText("ར་སྤྲོད་ཨང་རྟགས་བསྡུ་ལེན།");
                 etAccount.setHint("ཁ་པར་ཨང་གྲངས་གཏག་རོགས།");
                 etPassword.setHint("གསང་གྲངས་གཏག་རོགས།");
                 tvOr.setText("ཡང་ན།");
@@ -708,13 +708,13 @@ public class LoginV2Activity extends BaseActivity {
                 registerEtPhone.setHint("ཁ་པར་ཨང་གྲངས་གཏག་རོགས།");
                 registerTvCode.setText("ར་སྤྲོད་ཨང་རྟགས།");
                 registerEtCode.setHint("ར་སྤྲོད་ཨང་རྟགས་གཏག་རོགས།");
-                registerGetCode.setText("ར་སྤྲོད་ཨང་གྲངས་བསྡུ་ལེན།");
+                registerGetCode.setText("ར་སྤྲོད་ཨང་རྟགས་བསྡུ་ལེན།");
                 registerTvPassword.setText("གསང་གྲངས་སྒྲིག་འགོད།");
                 registerPassword.setHint("གསལ་བྱེད་ཆེ་ཆུང་དང་གྲངས་ཀ་6-20བར་གཏག་རོགས།");
                 registerConfirmTvPassword.setText("གསང་གྲངས་གཏན་འཁེལ།");
                 registerConfirmEtPassword.setHint("གསང་གྲངས་ཡང་བསྐྱར་གཏག་རོགས།");
                 // 藏文 —— 最终完美版
-                checkLogin.setText("ངས་བཀླགས་ཤིང་དང་ལེན་བྱས་པ།་");
+                checkLogin.setText("ངས་བཀླགས་ཤིང་དང་ལེན་བྱས་པ།");
                 userAgreement.setText("《སྤྱོད་མཁན་གྱི་ཞབས་ཞུའི་གྲོས་ཆིངས།》དང་");
                 userPolicy.setText("《གསང་དོན་སྲིད་ཇུས།》");
                 submitRegister.setText("ཐོ་འགོད།");

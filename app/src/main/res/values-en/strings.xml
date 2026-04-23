@@ -9,7 +9,7 @@
     <string name="click_to_login">Click to Login</string>
     <string name="login_title">Login</string>
     <string name="register_title">Register</string>
-    <string name="hint_username">Enter username</string>
+    <string name="hint_username">Enter Phone</string>
     <string name="hint_account">Enter account</string>
     <string name="login_hint">No password required, just enter your account</string>
     <string name="register_hint">Default password will be set automatically</string>

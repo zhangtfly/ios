@@ -11,10 +11,10 @@ echo 2. 构建APK...
 call gradlew assembleDebug
 
 REM 检查构建结果
-if exist "app\build\outputs\apk\debug\app-debug.apk" (
+if exist "app\build\outputs\apk\debug\cn.edu.utibet.sunshineglm.apk" (
     echo.
     echo ✅ APK构建成功！
-    echo 📁 文件位置: app\build\outputs\apk\debug\app-debug.apk
+    echo 📁 文件位置: app\build\outputs\apk\debug\cn.edu.utibet.sunshineglm.apk
     echo.
     echo 📱 安装方法：
     echo 1. 将APK文件发送给其他人

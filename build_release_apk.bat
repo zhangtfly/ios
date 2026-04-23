@@ -25,10 +25,10 @@ if exist "app\build\outputs\apk\release\app-release-unsigned.apk" (
     echo 🔄 正在构建debug版本（可直接安装）...
     call gradlew assembleDebug
     
-    if exist "app\build\outputs\apk\debug\app-debug.apk" (
+    if exist "app\build\outputs\apk\debug\cn.edu.utibet.sunshineglm.apk" (
         echo.
         echo ✅ Debug版APK构建成功！
-        echo 📁 文件位置: app\build\outputs\apk\debug\app-debug.apk
+        echo 📁 文件位置: app\build\outputs\apk\debug\cn.edu.utibet.sunshineglm.apk
         echo 📱 这个版本可以直接安装使用
     )
     echo.

@@ -12,10 +12,10 @@ echo "2. 构建APK..."
 ./gradlew assembleDebug
 
 # 检查构建结果
-if [ -f "app/build/outputs/apk/debug/app-debug.apk" ]; then
+if [ -f "app/build/outputs/apk/debug/cn.edu.utibet.sunshineglm.apk" ]; then
     echo
     echo "✅ APK构建成功！"
-    echo "📁 文件位置: app/build/outputs/apk/debug/app-debug.apk"
+    echo "📁 文件位置: app/build/outputs/apk/debug/cn.edu.utibet.sunshineglm.apk"
     echo
     echo "📱 安装方法："
     echo "1. 将APK文件发送给其他人"

@@ -275,7 +275,7 @@ android {
    ```
 
 ### 输出文件位置
-- Debug APK: `app/build/outputs/apk/debug/app-debug.apk`
+- Debug APK: `app/build/outputs/apk/debug/cn.edu.utibet.sunshineglm.apk`
 - Release APK: `app/build/outputs/apk/release/app-release.apk`
 
 ---
@@ -285,7 +285,7 @@ android {
 ### 用户登录
 ```
 POST /api/user/login
-Request: { "account": "用户名", "password": "密码" }
+Request: { "account": "手机号", "password": "密码" }
 Response: { "code": 0, "data": { "token": "...", "userName": "..." } }
 ```
 
